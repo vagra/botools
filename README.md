@@ -21,6 +21,7 @@ $ go1.20rc3 run botools
 ```
 
 # build
+if your `go` is `1.20` or later, just compile and run it:
 ```
 $ go mod tidy
 $ go build
@@ -28,4 +29,4 @@ $ go run botools
 ```
 
 # using
-copy config.ini.example as config.ini, edit this ini, then start botools.
+copy `config.ini.example` as `config.ini`, edit this `ini` file, then start `botools.exe`.
