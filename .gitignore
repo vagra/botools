@@ -1,0 +1,6 @@
+*.db
+*.exe
+*.log
+*.db-journal
+go.sum
+config.ini
