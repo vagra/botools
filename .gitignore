@@ -1,5 +1,6 @@
 *.db
 *.exe
+*.zip
 *.log
 *.db-journal
 go.sum

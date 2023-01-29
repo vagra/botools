@@ -38,6 +38,8 @@ func Welcome() {
 
 		break
 	}
+
+	WaitExit(0)
 }
 
 func Run(step int) error {
