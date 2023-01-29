@@ -74,7 +74,7 @@ BOTOOLS - bot.sanxuezang.com toolchain
     获取指定根目录下的文件夹、文件的路径和元数据，保存到数据库。
 3)  get_size: 获取文件夹大小
     基于现有数据库，获取每一个文件夹的大小。
-4)  get_md5: 获取元数据
+4)  get_md5: 获取文件 MD5
     基于现有数据库，获取每一个文件的MD5。
 0)  exit: 退出程序
 
