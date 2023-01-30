@@ -65,11 +65,11 @@ func Confirm() bool {
 
 func GenUID(prefix string, counter *int64) string {
 	*counter += 1
-	return fmt.Sprintf("%s-%d", prefix, *counter)
+	return fmt.Sprintf("%s-%016d", prefix, *counter)
 }
 
 func GetUID(prefix string, id int64) string {
-	return fmt.Sprintf("%s-%d", prefix, id)
+	return fmt.Sprintf("%s-%016d", prefix, id)
 }
 
 func PathExist(path string) bool {
