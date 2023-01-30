@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
@@ -124,7 +125,9 @@ func IsValidName(name string) bool {
 
 func IsHidden(path string) bool {
 
-	if path[0] == '.' {
+	name := filepath.Base(path)
+
+	if name[0] == '.' {
 		return true
 	}
 
