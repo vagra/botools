@@ -2,9 +2,7 @@ package app
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/qustavo/dotsql"
 )
@@ -12,46 +10,70 @@ import (
 func InitDB() error {
 	println("start: init db")
 
+	if !ReadConfig() {
+		WaitExit(1)
+	}
+
+	CheckDBsDir()
+
+	println()
+	GetDBs()
+	ReadSQL()
+
 	if AnyDBExist() {
+		println()
+		println("初始化数据库会删除现有数据库，请谨慎操作！")
+		println("您确定要删除现有的数据库文件？请输入 yes 或 no ：")
+
 		if Confirm() {
+			println()
 			DeleteDB()
 		} else {
 			WaitExit(1)
 		}
 	}
 
-	ReadSQL()
-	GetDBs()
+	println()
 	CreateTables()
 
+	println()
 	println("init db done!")
 	return nil
 }
 
-func GetDBs() {
-	var err error
-
-	for i := 0; i < DB_COUNT; i++ {
-		println("打开数据库 " + g_db_names[i])
-
-		g_dbs[i], err = sql.Open("sqlite3", g_db_names[i])
-		Check(err, "打开数据库 "+g_db_names[i]+" 失败")
+func CheckDBsDir() {
+	if !DirExist(DB_DIR) {
+		err := os.Mkdir(DB_DIR, os.ModePerm)
+		Check(err, "创建数据库目录 "+DB_DIR+" 时出错")
 	}
+}
 
-	g_disks_db = g_dbs[0]
-	g_files_db = g_dbs[1]
-	g_dirs_db = g_dbs[2]
-	g_file_metas_db = g_dbs[3]
-	g_dir_metas_db = g_dbs[4]
+func GetDBs() {
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_name := GetDBName(disk_name)
+
+		println("打开数据库 " + db_name)
+
+		db, err := sql.Open("sqlite3", db_name)
+		Check(err, "打开数据库 "+db_name+" 失败")
+
+		g_dbs[db_name] = db
+	}
 }
 
 func CreateTables() {
-	var err error
-	for i := 0; i < DB_COUNT; i++ {
-		println("在数据库 " + g_db_names[i] + " 中创建表 " + g_db_tables[i])
+	for db_name, db := range g_dbs {
+		println("初始化数据 " + db_name)
 
-		_, err = g_dot.Exec(g_dbs[i], g_create_sqls[i])
-		Check(err, "在数据库 "+g_db_names[i]+" 中创建表 "+g_db_tables[i]+" 失败")
+		_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
+		Check(err, "在数据库 "+db_name+" 中创建 dirs 表失败")
+
+		_, err = g_dot.Exec(db, SQL_CREATE_FILES)
+		Check(err, "在数据库 "+db_name+" 中创建 files 表失败")
+
 	}
 }
 
@@ -64,52 +86,23 @@ func ReadSQL() {
 }
 
 func DeleteDB() {
-	for _, path := range g_db_names {
-		print("删除数据库 " + path)
+	for db_name := range g_dbs {
+		print("删除数据库 " + db_name)
 
-		if !FileExist(path) {
+		if !FileExist(db_name) {
 			println(" (不存在)")
 			continue
 		}
 		println()
 
-		err := os.Remove(path)
-		Check(err, "删除数据库文件 "+path+" 失败")
-	}
-}
-
-func Confirm() bool {
-	println("初始化数据库会删除现有数据库，请谨慎操作！")
-	println("您确定要删除现有的数据库文件？请输入 yes 或 no ：")
-
-	var input string
-	var yes string
-
-	for {
-		_, err := fmt.Scanln(&input)
-		if err != nil {
-			println("请输入")
-			continue
-		}
-
-		yes = strings.ToLower(input)
-
-		switch yes {
-		case "yes":
-			return true
-		case "n":
-			fallthrough
-		case "no":
-			return false
-		default:
-			println("请输入 yes 或 no")
-		}
+		err := os.Remove(db_name)
+		Check(err, "删除数据库文件 "+db_name+" 失败")
 	}
 }
 
 func AnyDBExist() bool {
-	for _, path := range g_db_names {
-		if FileExist(path) {
+	for db_name := range g_dbs {
+		if FileExist(db_name) {
 			return true
 		}
 	}
@@ -118,8 +111,8 @@ func AnyDBExist() bool {
 }
 
 func AllDBExist() bool {
-	for _, path := range g_db_names {
-		if !FileExist(path) {
+	for db_name := range g_dbs {
+		if !FileExist(db_name) {
 			return false
 		}
 	}

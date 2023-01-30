@@ -1,25 +1,13 @@
--- name: create-disks-table
-BEGIN TRANSACTION;
-
-CREATE TABLE IF NOT EXISTS "disks" (
-	"id" INTEGER NOT NULL UNIQUE,
-	"name" TEXT NOT NULL DEFAULT '',
-	"path" TEXT NOT NULL DEFAULT '',
-	"dir_id" INTEGER NOT NULL DEFAULT 0,
-	"size" INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("id" AUTOINCREMENT)
-);
-
-COMMIT;
-
 -- name: create-dirs-table
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS "dirs" (
-	"id" INTEGER NOT NULL UNIQUE,
+	"id" VARCHAR(64) NOT NULL UNIQUE,
 	"name" TEXT NOT NULL DEFAULT '',
-	"parent_id" INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("id" AUTOINCREMENT)
+	"parent_id" VARCHAR(64) NOT NULL DEFAULT '0',
+	"size" INTEGER NOT NULL DEFAULT 0,
+	"mod_time" VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
 );
 
 COMMIT;
@@ -28,70 +16,25 @@ COMMIT;
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS "files" (
-	"id" INTEGER NOT NULL UNIQUE,
+	"id" VARCHAR(64) NOT NULL UNIQUE,
 	"name" TEXT NOT NULL DEFAULT '',
-	"parent_id" INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("id" AUTOINCREMENT)
-);
-
-COMMIT;
-
--- name: create-dir_metas-table
-BEGIN TRANSACTION;
-
-CREATE TABLE IF NOT EXISTS "dir_metas" (
-	"id" INTEGER NOT NULL UNIQUE,
-	"dir_id" INTEGER NOT NULL DEFAULT 0,
-	"size" INTEGER NOT NULL DEFAULT 0,
-	"mod_time" TEXT NOT NULL DEFAULT '',
-	PRIMARY KEY("id" AUTOINCREMENT)
-);
-
-COMMIT;
-
--- name: create-file_metas-table
-BEGIN TRANSACTION;
-
-CREATE TABLE IF NOT EXISTS "file_metas" (
-	"id" INTEGER NOT NULL UNIQUE,
-	"file_id" INTEGER NOT NULL DEFAULT 0,
+	"parent_id" VARCHAR(64) NOT NULL DEFAULT '',
 	"size" INTEGER NOT NULL DEFAULT 0,
 	"md5" TEXT NOT NULL DEFAULT '',
-	"mod_time" TEXT NOT NULL DEFAULT '',
-	PRIMARY KEY("id" AUTOINCREMENT)
+	"mod_time" VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
 );
 
 COMMIT;
 
--- name: add-disk
-INSERT INTO disks (name, path, dir_id) VALUES(?, ?, ?);
-
 -- name: add-dir
-INSERT INTO dirs (name, parent_id) VALUES(?, ?);
+INSERT INTO dirs (id, name, parent_id, mod_time) VALUES(?, ?, ?);
 
 -- name: add-file
-INSERT INTO files (name, parent_id) VALUES(?, ?);
-
--- name: add-dir_meta
-INSERT INTO dir_metas (dir_id, size, mod_time) VALUES(?, ?, ?);
-
--- name: add-file_meta
-INSERT INTO file_metas (file_id, size, mod_time) VALUES(?, ?, ?);
-
--- name: get-all-disks
-SELECT id, name, path, dir_id FROM disks;
-
--- name: get-disks-count
-select count(id) from disks;
+INSERT INTO files (id, name, parent_id, size, mod_time) VALUES(?, ?, ?, ?);
 
 -- name: get-dirs-count
-select count(id) from dirs;
+SELECT count(id) FROM dirs;
 
 -- name: get-files-count
-select count(id) from files;
-
--- name: get-dir_metas-count
-select count(id) from dir_metas;
-
--- name: get-file_metas-count
-select count(id) from file_metas;
+SELECT count(id) FROM files;

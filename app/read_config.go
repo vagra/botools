@@ -19,6 +19,17 @@ func ReadConfig() bool {
 	}
 
 	for name, path := range g_disks {
+		if len(name) <= 0 || len(path) <= 0 {
+			println("格式：disk-name = disk:/path")
+			println("等号的左右两边不能为空")
+			println("请检查 " + CONFIG_INI)
+			return false
+		}
+		if !IsValidName(name) {
+			println("disk-name 只能包含字母、数字、_、-，并且必须以字母开头")
+			println("请检查 " + CONFIG_INI)
+			return false
+		}
 		println(name + " = " + path)
 	}
 

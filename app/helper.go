@@ -2,7 +2,11 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"regexp"
+	"strings"
+	"syscall"
 
 	"github.com/eiannone/keyboard"
 )
@@ -29,6 +33,42 @@ func WaitExit(code int) {
 	}
 
 	Exit(code)
+}
+
+func Confirm() bool {
+
+	var input string
+	var yes string
+
+	for {
+		_, err := fmt.Scanln(&input)
+		if err != nil {
+			println("请输入")
+			continue
+		}
+
+		yes = strings.ToLower(input)
+
+		switch yes {
+		case "yes":
+			return true
+		case "n":
+			fallthrough
+		case "no":
+			return false
+		default:
+			println("请输入 yes 或 no")
+		}
+	}
+}
+
+func GenUID(prefix string, counter *int64) string {
+	*counter += 1
+	return fmt.Sprintf("%s-%d", prefix, *counter)
+}
+
+func GetUID(prefix string, id int64) string {
+	return fmt.Sprintf("%s-%d", prefix, id)
 }
 
 func PathExist(path string) bool {
@@ -76,4 +116,31 @@ func DirExist(path string) bool {
 	}
 
 	return true
+}
+
+func IsValidName(name string) bool {
+	return regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_\-]+$`).MatchString(name)
+}
+
+func IsHidden(path string) bool {
+
+	if path[0] == '.' {
+		return true
+	}
+
+	pointer, err := syscall.UTF16PtrFromString(path)
+	if err != nil {
+		return false
+	}
+
+	attributes, err := syscall.GetFileAttributes(pointer)
+	if err != nil {
+		return false
+	}
+
+	return attributes&syscall.FILE_ATTRIBUTE_HIDDEN != 0
+}
+
+func GetDBName(disk_name string) string {
+	return fmt.Sprintf("%s/%s%s", DB_DIR, disk_name, DB_EXT)
 }
