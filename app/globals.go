@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const STEP_COUNT int = 4
+const STEP_COUNT int = 5
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
@@ -14,6 +14,8 @@ const CONFIG_INI = "config.ini"
 
 const DB_DIR string = "dbs"
 const DB_EXT string = ".db"
+
+const VIR_DIR string = "vir"
 
 const DISKS string = "disks"
 const FILES string = "files"
@@ -34,6 +36,7 @@ const SQL_COUNT_DIRS string = "get-dirs-count"
 const SQL_COUNT_FILES string = "get-files-count"
 
 const GET_TREE_LOG string = "get_tree.log"
+const GEN_LINK_LOG string = "gen_link.log"
 
 var g_db_tables []string = []string{DIRS, FILES}
 var g_create_sqls []string = []string{SQL_CREATE_DIRS, SQL_CREATE_FILES}
@@ -61,6 +64,8 @@ BOTOOLS - bot.sanxuezang.com toolchain
     基于现有数据库，获取每一个文件夹的大小。
 4)  get_md5: 获取文件 MD5
     基于现有数据库，获取每一个文件的MD5。
+5)  vir_tree: 生成虚拟目录树
+    不生成数据库，而是用软链接的方式生成虚拟的目录树
 0)  exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`
