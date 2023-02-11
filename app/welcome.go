@@ -54,7 +54,7 @@ func Run(step int) error {
 	case 3:
 		err = GetSize()
 	case 4:
-		err = GetMD5()
+		err = CheckSum()
 	case 5:
 		err = VirTree()
 	case 0:

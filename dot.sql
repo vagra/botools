@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS "files" (
 	"name" TEXT NOT NULL DEFAULT '',
 	"parent_id" VARCHAR(64) NOT NULL DEFAULT '',
 	"size" INTEGER NOT NULL DEFAULT 0,
-	"md5" TEXT NOT NULL DEFAULT '',
+	"status" INTEGER NOT NULL DEFAULT 0,
+	"sha1" VARCHAR(64) NOT NULL DEFAULT '',
 	"mod_time" VARCHAR(32) NOT NULL DEFAULT '',
 	PRIMARY KEY("id")
 );
@@ -38,3 +39,16 @@ SELECT count(id) FROM dirs;
 
 -- name: get-files-count
 SELECT count(id) FROM files;
+
+-- name: get-all-dirs
+SELECT id, parent_id, name FROM dirs;
+
+-- name: get-files-no-sha1
+SELECT id, parent_id, name FROM files WHERE LENGTH(sha1) <= 0;
+
+-- name: mod-file-sha1
+UPDATE files SET sha1 = ? WHERE id = ?;
+
+-- name: mod-file-status
+UPDATE files SET status = ? WHERE id = ?;
+

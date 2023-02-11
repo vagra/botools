@@ -2,6 +2,7 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/qustavo/dotsql"
@@ -55,7 +56,7 @@ func GetDBs() {
 
 		db_name := GetDBName(disk_name)
 
-		println("打开数据库 " + db_name)
+		fmt.Printf("打开数据库 %s\n", db_name)
 
 		db, err := sql.Open("sqlite3", db_name)
 		Check(err, "打开数据库 "+db_name+" 失败")
@@ -66,7 +67,7 @@ func GetDBs() {
 
 func CreateTables() {
 	for db_name, db := range g_dbs {
-		println("初始化数据 " + db_name)
+		fmt.Printf("初始化数据 %s\n", db_name)
 
 		_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
 		Check(err, "在数据库 "+db_name+" 中创建 dirs 表失败")
@@ -87,7 +88,7 @@ func ReadSQL() {
 
 func DeleteDB() {
 	for db_name := range g_dbs {
-		print("删除数据库 " + db_name)
+		fmt.Printf("删除数据库 %s", db_name)
 
 		if !FileExist(db_name) {
 			println(" (不存在)")

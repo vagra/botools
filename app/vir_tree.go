@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -23,8 +24,8 @@ func VirTree() error {
 
 	if AnyDiskDirExist() {
 		println()
-		println("执行本程序会删除 " + VIR_DIR + " 下已有的 disks 虚拟目录，再重新生成")
-		println("如果您不想删除某个 disk 的虚拟目录，可以在 " + CONFIG_INI + " 中把这个 disk 注释起来")
+		fmt.Printf("执行本程序会删除 %s 下已有的 disks 虚拟目录，再重新生成\n", VIR_DIR)
+		fmt.Printf("如果您不想删除某个 disk 的虚拟目录，可以在 %s 中把这个 disk 注释起来\n", CONFIG_INI)
 		println("您确定要删除现有的 disks 虚拟目录？请输入 yes 或 no ：")
 
 		if Confirm() {
@@ -48,7 +49,7 @@ func VirTree() error {
 }
 
 func GenVirTree(disk_name string, disk_path string) {
-	println("遍历 " + disk_name + ": " + disk_path)
+	fmt.Printf("遍历 %s : %s\n", disk_name, disk_path)
 
 	vir_path := VIR_DIR + "/" + disk_name
 
@@ -58,7 +59,7 @@ func GenVirTree(disk_name string, disk_path string) {
 func VirDir(vir_path string, real_path string) {
 
 	if !DirExist(real_path) {
-		log.Println("real path not exist: " + real_path)
+		log.Printf("real path not exist: %s\n", real_path)
 		return
 	}
 
@@ -85,7 +86,7 @@ func MakeVirDir(vir_path string) {
 	if !DirExist(vir_path) {
 		err := os.Mkdir(vir_path, os.ModePerm)
 		if err != nil {
-			log.Println("创建虚拟目录 " + vir_path + " 时出错")
+			log.Printf("创建虚拟目录 %s 时出错\n", vir_path)
 		}
 	}
 }
@@ -93,7 +94,7 @@ func MakeVirDir(vir_path string) {
 func MakeSymlink(vir_path string, real_path string) {
 	err := os.Symlink(real_path, vir_path)
 	if err != nil {
-		log.Println("创建符号链接失败：" + vir_path + " -> " + real_path)
+		log.Printf("创建符号链接失败：%s -> %s\n", vir_path, real_path)
 	}
 }
 
@@ -107,8 +108,8 @@ func CheckVirDir() {
 func CheckDiskPaths() bool {
 	for name, path := range g_disks {
 		if !DirExist(path) {
-			println(name + " 的路径 " + path + " 不存在")
-			println("请检查 " + CONFIG_INI)
+			fmt.Printf("%s 的路径 %s 不存在\n", name, path)
+			fmt.Printf("请检查 %s\n", CONFIG_INI)
 			return false
 		}
 	}
@@ -131,7 +132,7 @@ func DeleteDiskDirs() {
 
 		dir_name := VIR_DIR + "/" + name
 
-		print("删除虚拟目录 " + dir_name)
+		fmt.Printf("删除虚拟目录 %s", dir_name)
 
 		if !DirExist(dir_name) {
 			println(" (不存在)")

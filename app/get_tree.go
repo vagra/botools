@@ -31,14 +31,14 @@ func GetTree() error {
 	if !AllDBExist() {
 		println()
 		println("检查到一些 disk 还没有数据库，请重启本程序并选择 1 以初始化数据库")
-		println("或者修改 " + CONFIG_INI + " 用 # 注释掉不需要处理的 disk")
+		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
 		WaitExit(1)
 	}
 
 	println()
 	if HasData() {
 		println("检查到一些数据库中存在数据，为避免重复生成数据，请重启本程序并选择 1 以初始化数据库")
-		println("或者修改 " + CONFIG_INI + " 用 # 注释掉不需要处理的 disk")
+		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
 		WaitExit(1)
 	}
 
@@ -59,12 +59,12 @@ func HasData() bool {
 	for db_name, db := range g_dbs {
 
 		if QueryDirsCount(db) > 0 {
-			println("数据库 " + db_name + " 的 dirs 表中存在数据")
+			fmt.Printf("数据库 %s 的 dirs 表中存在数据\n", db_name)
 			return true
 		}
 
 		if QueryFilesCount(db) > 0 {
-			println("数据库 " + db_name + " 的 files 表中存在数据")
+			fmt.Printf("数据库 %s 的 files 表中存在数据\n", db_name)
 			return true
 		}
 	}
@@ -73,8 +73,8 @@ func HasData() bool {
 }
 
 func InitMaps(disk_name string, disk_path string) {
-	g_map_dirs = make(map[string]Dir)
-	g_map_files = make(map[string]File)
+	g_map_dirs = make(map[string]*Dir)
+	g_map_files = make(map[string]*File)
 
 	g_dirs_counter = 0
 	g_files_counter = 0
@@ -84,14 +84,14 @@ func InitMaps(disk_name string, disk_path string) {
 	dir.name = disk_path
 	dir.parent_id = "0"
 
-	g_map_dirs[dir.id] = dir
+	g_map_dirs[dir.id] = &dir
 }
 
 func ReadTree(disk_name string) {
 	root_id := GetUID(disk_name, 1)
 	root_dir := g_map_dirs[root_id]
 
-	println("遍历 " + disk_name + ": " + root_dir.name)
+	fmt.Printf("遍历 %s : %s\n", disk_name, root_dir.name)
 	ReadDir(disk_name, root_dir, root_dir.name)
 }
 
@@ -111,10 +111,10 @@ func QueryCount(disk_name string) {
 	fmt.Printf(" db dirs: %d \t  db files: %d \n", QueryDirsCount(db), QueryFilesCount(db))
 }
 
-func ReadDir(disk_name string, dir Dir, path string) {
+func ReadDir(disk_name string, dir *Dir, path string) {
 
 	if !DirExist(path) {
-		log.Println("dir not exist: " + path)
+		log.Printf("dir not exist: %s\n", path)
 		return
 	}
 
@@ -134,9 +134,9 @@ func ReadDir(disk_name string, dir Dir, path string) {
 			sub.parent_id = dir.id
 			sub.mod_time = item.ModTime().Format(TIME_FORMAT)
 
-			g_map_dirs[sub.id] = sub
+			g_map_dirs[sub.id] = &sub
 
-			ReadDir(disk_name, sub, item_path)
+			ReadDir(disk_name, &sub, item_path)
 
 		} else {
 
@@ -147,7 +147,7 @@ func ReadDir(disk_name string, dir Dir, path string) {
 			file.size = item.Size()
 			file.mod_time = item.ModTime().Format(TIME_FORMAT)
 
-			g_map_files[file.id] = file
+			g_map_files[file.id] = &file
 		}
 	}
 }

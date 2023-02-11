@@ -17,6 +17,7 @@ type Dir struct {
 	parent_id string
 	size      int64
 	mod_time  string
+	path      string
 }
 
 type File struct {
@@ -24,8 +25,10 @@ type File struct {
 	name      string
 	parent_id string
 	size      int64
-	md5       string
+	status    int8
+	sha1      string
 	mod_time  string
+	path      string
 }
 
 func (d Dir) Tuple() string {
@@ -44,7 +47,7 @@ func (d Dir) AddArgs(args *[]interface{}) {
 }
 
 func (f File) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%d', '%s')", f.id, f.name, f.parent_id, f.size, f.mod_time)
+	return fmt.Sprintf("('%s', '%s', '%s', '%d', '%s', '%s')", f.id, f.name, f.parent_id, f.size, f.sha1, f.mod_time)
 }
 
 func (f File) AddMarks(marks *[]string) {
