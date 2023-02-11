@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 func CheckSum() error {
@@ -127,6 +128,8 @@ func GetSHA1(disk_name string) {
 	var db_name string = GetDBName(disk_name)
 	var db *sql.DB = g_dbs[db_name]
 
+	start := time.Now()
+
 	go Writer(&wg, ctx, db, outChan, endChan)
 
 	for i := 0; i < g_threads; i++ {
@@ -140,12 +143,14 @@ func GetSHA1(disk_name string) {
 
 	end := <-endChan
 	if end {
-		println("main <- endChan: files finished.")
+		println("endChan -> main: no more files.")
 		println("main -> ctx: everyone stop!")
 		cancel()
 	}
 
 	wg.Wait()
+
+	fmt.Printf("执行时间: %v\n", time.Since(start))
 }
 
 func CompDirsPath() {

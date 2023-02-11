@@ -27,8 +27,7 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, i int, ci <-chan *File, co
 		case file := <-ci:
 
 			if file == nil {
-				fmt.Printf("\nchecker %d <- inChan: no more files.\n", i)
-				fmt.Printf("checker %d -> outChan: no more files.\n", i)
+				fmt.Printf("\ninChan -> checker %d -> outChan: no more files.\n", i)
 
 				co <- nil
 
@@ -67,7 +66,7 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, db *sql.DB, co <-chan *File
 		case file := <-co:
 
 			if file == nil {
-				println("writer -> endChain: no more files.")
+				println("outChan -> writer -> endChan: no more files.\n")
 				ce <- true
 
 				continue
