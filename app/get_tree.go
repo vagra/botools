@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 )
 
 func GetTree() error {
@@ -30,17 +31,38 @@ func GetTree() error {
 
 	InitMaps()
 
-	for name, path := range g_disks {
-		InitMap(name)
-		InitRootDir(name, path)
-		ReadTree(name)
-		WriteDB(name)
-		QueryCount(name)
-		println()
-	}
+	MTGetTree()
 
+	println()
 	println("get tree done!")
 	return nil
+}
+
+func MTGetTree() {
+	println("每个 disk 启动一个线程，先获取目录树，然后批量写入数据库")
+
+	var wg sync.WaitGroup
+
+	for name, path := range g_disks {
+		wg.Add(1)
+		go GetTreeWorker(&wg, name, path)
+	}
+
+	wg.Wait()
+}
+
+func GetTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
+	defer wg.Done()
+
+	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
+
+	InitMap(disk_name)
+	InitRootDir(disk_name, disk_path)
+	ReadTree(disk_name)
+	WriteDB(disk_name)
+	ReportCount(disk_name, disk_path)
+
+	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
 func CheckAllDBExist() {
@@ -118,7 +140,6 @@ func ReadTree(disk_name string) {
 	root_id := GetUID(disk_name, 1)
 	root_dir := g_map_dirs[disk_name][root_id]
 
-	fmt.Printf("遍历 %s : %s\n", disk_name, root_dir.name)
 	ReadDir(disk_name, root_dir, root_dir.name)
 }
 
@@ -127,11 +148,14 @@ func WriteDB(disk_name string) {
 	InsertFiles(disk_name, INSERT_COUNT)
 }
 
-func QueryCount(disk_name string) {
+func ReportCount(disk_name string, disk_path string) {
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("mem dirs: %d \t mem files: %d \n", len(g_map_dirs), len(g_map_files))
-	fmt.Printf(" db dirs: %d \t  db files: %d \n", DBQueryDirsCount(db), DBQueryFilesCount(db))
+	fmt.Printf("%s %s\n", disk_name, disk_path)
+	fmt.Printf("mem dirs: %d \t mem files: %d \n",
+		len(g_map_dirs[disk_name]), len(g_map_files[disk_name]))
+	fmt.Printf(" db dirs: %d \t  db files: %d \n",
+		DBQueryDirsCount(db), DBQueryFilesCount(db))
 }
 
 func ReadDir(disk_name string, dir *Dir, path string) {
