@@ -1,8 +1,11 @@
 package app
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -144,6 +147,20 @@ func IsHidden(path string) bool {
 	return attributes&syscall.FILE_ATTRIBUTE_HIDDEN != 0
 }
 
-func GetDBName(disk_name string) string {
+func GetDBPath(disk_name string) string {
 	return fmt.Sprintf("%s/%s%s", DB_DIR, disk_name, DB_EXT)
+}
+
+func SHA1(path string) (string, int8) {
+
+	file, err := os.Open(path)
+	if err != nil {
+		return "", 1
+	}
+
+	sha1h := sha1.New()
+	io.Copy(sha1h, file)
+	sum := hex.EncodeToString(sha1h.Sum(nil))
+
+	return sum, 0
 }

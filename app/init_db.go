@@ -11,16 +11,37 @@ import (
 func InitDB() error {
 	println("start: init db")
 
-	if !ReadConfig() {
-		WaitExit(1)
-	}
-
-	CheckDBsDir()
+	CheckConfig()
+	CheckDBsDirExist()
 
 	println()
 	GetDBs()
 	ReadSQL()
 
+	CheckNoDBExist()
+
+	println()
+	CreateTables()
+
+	println()
+	println("init db done!")
+	return nil
+}
+
+func CheckConfig() {
+	if !ReadConfig() {
+		WaitExit(1)
+	}
+}
+
+func CheckDBsDirExist() {
+	if !DirExist(DB_DIR) {
+		err := os.Mkdir(DB_DIR, os.ModePerm)
+		Check(err, "创建数据库目录 "+DB_DIR+" 时出错")
+	}
+}
+
+func CheckNoDBExist() {
 	if AnyDBExist() {
 		println()
 		println("初始化数据库会删除现有数据库，请谨慎操作！")
@@ -33,20 +54,6 @@ func InitDB() error {
 			WaitExit(1)
 		}
 	}
-
-	println()
-	CreateTables()
-
-	println()
-	println("init db done!")
-	return nil
-}
-
-func CheckDBsDir() {
-	if !DirExist(DB_DIR) {
-		err := os.Mkdir(DB_DIR, os.ModePerm)
-		Check(err, "创建数据库目录 "+DB_DIR+" 时出错")
-	}
 }
 
 func GetDBs() {
@@ -54,14 +61,14 @@ func GetDBs() {
 
 	for disk_name := range g_disks {
 
-		db_name := GetDBName(disk_name)
+		db_path := GetDBPath(disk_name)
 
-		fmt.Printf("打开数据库 %s\n", db_name)
+		fmt.Printf("打开数据库 %s\n", db_path)
 
-		db, err := sql.Open("sqlite3", db_name)
-		Check(err, "打开数据库 "+db_name+" 失败")
+		db, err := sql.Open("sqlite3", db_path)
+		Check(err, "打开数据库 "+db_path+" 失败")
 
-		g_dbs[db_name] = db
+		g_dbs[disk_name] = db
 	}
 }
 
@@ -88,22 +95,25 @@ func ReadSQL() {
 
 func DeleteDB() {
 	for db_name := range g_dbs {
-		fmt.Printf("删除数据库 %s", db_name)
+		db_path := GetDBPath(db_name)
 
-		if !FileExist(db_name) {
+		fmt.Printf("删除数据库 %s", db_path)
+
+		if !FileExist(db_path) {
 			println(" (不存在)")
 			continue
 		}
 		println()
 
-		err := os.Remove(db_name)
-		Check(err, "删除数据库文件 "+db_name+" 失败")
+		err := os.Remove(db_path)
+		Check(err, "删除数据库文件 "+db_path+" 失败")
 	}
 }
 
 func AnyDBExist() bool {
 	for db_name := range g_dbs {
-		if FileExist(db_name) {
+		db_path := GetDBPath(db_name)
+		if FileExist(db_path) {
 			return true
 		}
 	}
@@ -113,7 +123,8 @@ func AnyDBExist() bool {
 
 func AllDBExist() bool {
 	for db_name := range g_dbs {
-		if !FileExist(db_name) {
+		db_path := GetDBPath(db_name)
+		if !FileExist(db_path) {
 			return false
 		}
 	}

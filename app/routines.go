@@ -2,13 +2,8 @@ package app
 
 import (
 	"context"
-	"crypto/sha1"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
-	"io"
-	"log"
-	"os"
 	"sync"
 	"time"
 )
@@ -46,12 +41,13 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, i int, ci <-chan *File, co
 	}
 }
 
-func Writer(wg *sync.WaitGroup, ctx context.Context, db *sql.DB, co <-chan *File, ce chan<- bool) {
+func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan *File, ce chan<- bool) {
 	wg.Add(1)
 	defer wg.Done()
 
-	total := len(g_map_files)
+	var db *sql.DB = g_dbs[disk_name]
 
+	total := len(g_map_files[disk_name])
 	divisor := int(total / 50)
 
 	println("__________________________________________________")
@@ -74,7 +70,7 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, db *sql.DB, co <-chan *File
 
 			// fmt.Printf("%d/%d\twriter <- outChain: %d  %x  %s\n", count, total, file.status, file.sha1, file.path)
 
-			UpdateFile(db, file)
+			DBUpdateFile(db, file)
 
 			count++
 
@@ -89,44 +85,5 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, db *sql.DB, co <-chan *File
 			// println("writer: waiting for signal...")
 			time.Sleep(time.Millisecond)
 		}
-	}
-}
-
-func SHA1(path string) (string, int8) {
-
-	file, err := os.Open(path)
-	if err != nil {
-		return "", 1
-	}
-
-	sha1h := sha1.New()
-	io.Copy(sha1h, file)
-	sum := hex.EncodeToString(sha1h.Sum(nil))
-
-	return sum, 0
-}
-
-func UpdateFile(db *sql.DB, file *File) {
-	if file.status == 0 {
-		UpdateFileSha1(db, file)
-	} else {
-		UpdateFileStatus(db, file)
-	}
-}
-
-func UpdateFileSha1(db *sql.DB, file *File) {
-
-	_, err := g_dot.Exec(db, SQL_MOD_FILE_SHA1, file.sha1, file.id)
-	if err != nil {
-		log.Printf("db update file sha1 error: %s\n", err.Error())
-	}
-
-}
-
-func UpdateFileStatus(db *sql.DB, file *File) {
-
-	_, err := g_dot.Exec(db, SQL_MOD_FILE_STATUS, file.status, file.id)
-	if err != nil {
-		log.Printf("db update file status error: %s\n" + err.Error())
 	}
 }

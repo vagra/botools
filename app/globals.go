@@ -53,11 +53,11 @@ var g_disks map[string]string
 var g_dbs map[string]*sql.DB
 var g_dot *dotsql.DotSql
 
-var g_map_dirs map[string]*Dir
-var g_map_files map[string]*File
+var g_map_dirs map[string]map[string]*Dir
+var g_map_files map[string]map[string]*File
 
-var g_dirs_counter int64
-var g_files_counter int64
+var g_dirs_counter map[string]*int64
+var g_files_counter map[string]*int64
 
 const WELCOME string = `
 BOTOOLS - bot.sanxuezang.com toolchain

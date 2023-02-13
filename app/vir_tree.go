@@ -16,12 +16,24 @@ func VirTree() error {
 
 	log.SetOutput(file)
 
-	if !ReadConfig() {
-		WaitExit(1)
+	println()
+	CheckConfig()
+	CheckVirDirExist()
+	CheckNoDiskDirExist()
+
+	println()
+	MakeDiskDirs()
+
+	for name, path := range g_disks {
+		GenVirTree(name, path)
+		println()
 	}
 
-	CheckVirDir()
+	println("gen virtual links done!")
+	return nil
+}
 
+func CheckNoDiskDirExist() {
 	if AnyDiskDirExist() {
 		println()
 		fmt.Printf("执行本程序会删除 %s 下已有的 disks 虚拟目录，再重新生成\n", VIR_DIR)
@@ -35,17 +47,6 @@ func VirTree() error {
 			WaitExit(1)
 		}
 	}
-
-	println()
-	MakeDiskDirs()
-
-	for name, path := range g_disks {
-		GenVirTree(name, path)
-		println()
-	}
-
-	println("gen virtual links done!")
-	return nil
 }
 
 func GenVirTree(disk_name string, disk_path string) {
@@ -98,7 +99,7 @@ func MakeSymlink(vir_path string, real_path string) {
 	}
 }
 
-func CheckVirDir() {
+func CheckVirDirExist() {
 	if !DirExist(VIR_DIR) {
 		err := os.Mkdir(VIR_DIR, os.ModePerm)
 		Check(err, "创建虚拟目录 "+VIR_DIR+" 时出错")

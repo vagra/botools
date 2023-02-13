@@ -18,32 +18,21 @@ func GetTree() error {
 
 	log.SetOutput(file)
 
-	if !ReadConfig() {
-		WaitExit(1)
-	}
-
-	CheckDBsDir()
+	CheckConfig()
 
 	println()
 	GetDBs()
 	ReadSQL()
 
-	if !AllDBExist() {
-		println()
-		println("检查到一些 disk 还没有数据库，请重启本程序并选择 1 以初始化数据库")
-		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
-		WaitExit(1)
-	}
-
 	println()
-	if HasData() {
-		println("检查到一些数据库中存在数据，为避免重复生成数据，请重启本程序并选择 1 以初始化数据库")
-		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
-		WaitExit(1)
-	}
+	CheckAllDBExist()
+	CheckAllDBNoData()
+
+	InitMaps()
 
 	for name, path := range g_disks {
-		InitMaps(name, path)
+		InitMap(name)
+		InitRootDir(name, path)
 		ReadTree(name)
 		WriteDB(name)
 		QueryCount(name)
@@ -54,16 +43,40 @@ func GetTree() error {
 	return nil
 }
 
+func CheckAllDBExist() {
+	if !AllDBExist() {
+		println()
+		println("检查到一些 disk 还没有数据库，请重启本程序并选择 1 以初始化数据库")
+		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
+		WaitExit(1)
+	}
+}
+
+func CheckAllDBNoData() {
+	if HasData() {
+		println("检查到一些数据库中存在数据，为避免重复生成数据，请重启本程序并选择 1 以初始化数据库")
+		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
+		WaitExit(1)
+	}
+}
+
+func CheckAnyDBHasData() {
+	if !HasData() {
+		println("数据库中没有数据，请重启本程序并选择 2 以初始化数据库")
+		WaitExit(1)
+	}
+}
+
 func HasData() bool {
 
 	for db_name, db := range g_dbs {
 
-		if QueryDirsCount(db) > 0 {
+		if DBQueryDirsCount(db) > 0 {
 			fmt.Printf("数据库 %s 的 dirs 表中存在数据\n", db_name)
 			return true
 		}
 
-		if QueryFilesCount(db) > 0 {
+		if DBQueryFilesCount(db) > 0 {
 			fmt.Printf("数据库 %s 的 files 表中存在数据\n", db_name)
 			return true
 		}
@@ -72,42 +85,53 @@ func HasData() bool {
 	return false
 }
 
-func InitMaps(disk_name string, disk_path string) {
-	g_map_dirs = make(map[string]*Dir)
-	g_map_files = make(map[string]*File)
+func InitMaps() {
+	g_map_dirs = make(map[string]map[string]*Dir)
+	g_map_files = make(map[string]map[string]*File)
 
-	g_dirs_counter = 0
-	g_files_counter = 0
+	g_dirs_counter = make(map[string]*int64)
+	g_files_counter = make(map[string]*int64)
+}
 
+func InitMap(disk_name string) {
+	g_map_dirs[disk_name] = make(map[string]*Dir)
+	g_map_files[disk_name] = make(map[string]*File)
+
+	var dirs_counter int64 = 0
+	var files_counter int64 = 0
+
+	g_dirs_counter[disk_name] = &dirs_counter
+	g_files_counter[disk_name] = &files_counter
+}
+
+func InitRootDir(disk_name string, disk_path string) {
 	var dir Dir
-	dir.id = GenUID(disk_name, &g_dirs_counter)
+	dir.id = GenUID(disk_name, g_dirs_counter[disk_name])
 	dir.parent_id = "0"
 	dir.name = disk_path
 	dir.path = disk_path
 
-	g_map_dirs[dir.id] = &dir
+	g_map_dirs[disk_name][dir.id] = &dir
 }
 
 func ReadTree(disk_name string) {
 	root_id := GetUID(disk_name, 1)
-	root_dir := g_map_dirs[root_id]
+	root_dir := g_map_dirs[disk_name][root_id]
 
 	fmt.Printf("遍历 %s : %s\n", disk_name, root_dir.name)
 	ReadDir(disk_name, root_dir, root_dir.name)
 }
 
 func WriteDB(disk_name string) {
-	var db *sql.DB = g_dbs[GetDBName(disk_name)]
-
-	InsertDirs(db, INSERT_COUNT)
-	InsertFiles(db, INSERT_COUNT)
+	InsertDirs(disk_name, INSERT_COUNT)
+	InsertFiles(disk_name, INSERT_COUNT)
 }
 
 func QueryCount(disk_name string) {
-	var db *sql.DB = g_dbs[GetDBName(disk_name)]
+	var db *sql.DB = g_dbs[disk_name]
 
 	fmt.Printf("mem dirs: %d \t mem files: %d \n", len(g_map_dirs), len(g_map_files))
-	fmt.Printf(" db dirs: %d \t  db files: %d \n", QueryDirsCount(db), QueryFilesCount(db))
+	fmt.Printf(" db dirs: %d \t  db files: %d \n", DBQueryDirsCount(db), DBQueryFilesCount(db))
 }
 
 func ReadDir(disk_name string, dir *Dir, path string) {
@@ -129,32 +153,34 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 		if item.IsDir() {
 
 			var sub Dir
-			sub.id = GenUID(disk_name, &g_dirs_counter)
+			sub.id = GenUID(disk_name, g_dirs_counter[disk_name])
 			sub.parent_id = dir.id
 			sub.name = item.Name()
 			sub.path = item_path
 			sub.mod_time = item.ModTime().Format(TIME_FORMAT)
 
-			g_map_dirs[sub.id] = &sub
+			g_map_dirs[disk_name][sub.id] = &sub
 
 			ReadDir(disk_name, &sub, item_path)
 
 		} else {
 
 			var file File
-			file.id = GenUID(disk_name, &g_files_counter)
+			file.id = GenUID(disk_name, g_files_counter[disk_name])
 			file.parent_id = dir.id
 			file.name = item.Name()
 			file.path = item_path
 			file.size = item.Size()
 			file.mod_time = item.ModTime().Format(TIME_FORMAT)
 
-			g_map_files[file.id] = &file
+			g_map_files[disk_name][file.id] = &file
 		}
 	}
 }
 
-func InsertDirs(db *sql.DB, count int) {
+func InsertDirs(disk_name string, count int) {
+
+	var db *sql.DB = g_dbs[disk_name]
 
 	var marks []string = []string{}
 	var args []interface{} = []interface{}{}
@@ -162,14 +188,14 @@ func InsertDirs(db *sql.DB, count int) {
 	var m int = 0
 	var n int = 0
 
-	for _, dir := range g_map_dirs {
+	for _, dir := range g_map_dirs[disk_name] {
 		m += 1
 		n += 1
 
 		dir.AddMarks(&marks)
 		dir.AddArgs(&args)
 
-		if n >= count || m >= len(g_map_dirs) {
+		if n >= count || m >= len(g_map_dirs[disk_name]) {
 
 			stmt := g_dot.QueryMap()[SQL_ADD_DIRS] + strings.Join(marks, ",\n")
 
@@ -183,7 +209,8 @@ func InsertDirs(db *sql.DB, count int) {
 	}
 }
 
-func InsertFiles(db *sql.DB, count int) {
+func InsertFiles(disk_name string, count int) {
+	var db *sql.DB = g_dbs[disk_name]
 
 	var marks []string = []string{}
 	var args []interface{} = []interface{}{}
@@ -191,14 +218,14 @@ func InsertFiles(db *sql.DB, count int) {
 	var m int = 0
 	var n int = 0
 
-	for _, dir := range g_map_files {
+	for _, dir := range g_map_files[disk_name] {
 		m += 1
 		n += 1
 
 		dir.AddMarks(&marks)
 		dir.AddArgs(&args)
 
-		if n >= count || m >= len(g_map_files) {
+		if n >= count || m >= len(g_map_files[disk_name]) {
 
 			stmt := g_dot.QueryMap()[SQL_ADD_FILES] + strings.Join(marks, ",\n")
 
@@ -210,30 +237,4 @@ func InsertFiles(db *sql.DB, count int) {
 			n = 0
 		}
 	}
-}
-
-func QueryDirsCount(db *sql.DB) int64 {
-
-	var count int64 = 0
-
-	row, err := g_dot.QueryRow(db, SQL_COUNT_DIRS)
-	Check(err, "执行 SQL "+SQL_COUNT_DIRS+" 时出错")
-
-	err = row.Scan(&count)
-	Check(err, "执行 SQL "+SQL_COUNT_DIRS+" 后获取 count 时出错")
-
-	return count
-}
-
-func QueryFilesCount(db *sql.DB) int64 {
-
-	var count int64 = 0
-
-	row, err := g_dot.QueryRow(db, SQL_COUNT_FILES)
-	Check(err, "执行 SQL "+SQL_COUNT_FILES+" 时出错")
-
-	err = row.Scan(&count)
-	Check(err, "执行 SQL "+SQL_COUNT_FILES+" 后获取 count 时出错")
-
-	return count
 }
