@@ -31,17 +31,73 @@ func CheckSum() error {
 
 	InitMaps()
 
+	MTCheckSum()
+
+	println()
+	println("checksum done!")
+	return nil
+}
+
+func MTCheckSum() {
+	println("每个 disk 启动多个 checker 和一个 writer 并行获取 sha1 和写入数据库")
+
+	var main_wg sync.WaitGroup
+
 	for name := range g_disks {
 		InitMap(name)
-		if GetTasks(name) {
-			GetSHA1(name)
-		}
-		println()
+		GetTasks(name)
 	}
 
-	println("checksum done!")
+	for name, path := range g_disks {
+		if HasTasks(name) {
+			main_wg.Add(1)
+			go CheckSumWorker(&main_wg, name, path)
+		}
+	}
 
-	return nil
+	main_wg.Wait()
+}
+
+func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string, disk_path string) {
+
+	defer main_wg.Done()
+
+	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
+
+	var wg sync.WaitGroup
+
+	inChan := make(chan *File, 1000)
+	outChan := make(chan *File, 1000)
+	endChan := make(chan bool)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	start := time.Now()
+
+	wg.Add(1)
+	go Writer(&wg, ctx, disk_name, outChan, endChan)
+
+	for i := 0; i < g_threads; i++ {
+		wg.Add(1)
+		go Checker(&wg, ctx, disk_name, i, inChan, outChan)
+	}
+
+	for _, file := range g_map_files[disk_name] {
+		inChan <- file
+	}
+	inChan <- nil
+
+	end := <-endChan
+	if end {
+		fmt.Printf("%s: endChan -> main: no more files.\n", disk_name)
+		fmt.Printf("%s: main -> ctx: everyone stop!\n", disk_name)
+		cancel()
+	}
+
+	wg.Wait()
+
+	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
 func GetDirs(disk_name string) {
@@ -65,12 +121,12 @@ func GetDirs(disk_name string) {
 	}
 }
 
-func GetTasks(disk_name string) bool {
+func GetTasks(disk_name string) {
 
 	var db_path string = GetDBPath(disk_name)
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("从数据库 %s 中读取所有尚未获取 sha1 的文件\n", db_path)
+	fmt.Printf("%s: 从数据库 %s 中读取所有尚未获取 sha1 的文件\n", disk_name, db_path)
 
 	rows, err := g_dot.Query(db, SQL_GET_FILES_NO_SHA1)
 	Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 时出错")
@@ -88,51 +144,15 @@ func GetTasks(disk_name string) bool {
 	count := len(g_map_files[disk_name])
 
 	if count == 0 {
-		println("所有文件都已经有了 sha1 值，不再重复获取。")
-		return false
+		fmt.Printf("%s: 所有文件都已经有了 sha1 值，不再重复获取。\n", disk_name)
+		return
 	}
 
-	fmt.Printf("有 %d 个文件需要获取 sha1 值\n", count)
-
-	return true
+	fmt.Printf("%s: 有 %d 个文件需要获取 sha1 值\n", disk_name, count)
 }
 
-func GetSHA1(disk_name string) {
-
-	fmt.Printf("启动多线程获取 %s 的文件 sha1 、单线程更新数据库...\n", disk_name)
-
-	var wg sync.WaitGroup
-
-	inChan := make(chan *File, 100)
-	outChan := make(chan *File, 100)
-	endChan := make(chan bool)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	start := time.Now()
-
-	go Writer(&wg, ctx, disk_name, outChan, endChan)
-
-	for i := 0; i < g_threads; i++ {
-		go Checker(&wg, ctx, i, inChan, outChan)
-	}
-
-	for _, file := range g_map_files[disk_name] {
-		inChan <- file
-	}
-	inChan <- nil
-
-	end := <-endChan
-	if end {
-		println("endChan -> main: no more files.")
-		println("main -> ctx: everyone stop!")
-		cancel()
-	}
-
-	wg.Wait()
-
-	fmt.Printf("执行时间: %v\n", time.Since(start))
+func HasTasks(disk_name string) bool {
+	return len(g_map_files[disk_name]) > 0
 }
 
 func CompDirsPath(disk_name string) {

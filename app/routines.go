@@ -8,28 +8,26 @@ import (
 	"time"
 )
 
-func Checker(wg *sync.WaitGroup, ctx context.Context, i int, ci <-chan *File, co chan<- *File) {
-
-	wg.Add(1)
+func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, ci <-chan *File, co chan<- *File) {
 	defer wg.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("checker %d : stop.\n", i)
+			fmt.Printf("%s: checker %d stop.\n", disk_name, i)
 			return
 
 		case file := <-ci:
 
 			if file == nil {
-				fmt.Printf("\ninChan -> checker %d -> outChan: no more files.\n", i)
+				fmt.Printf("%s: inChan -> checker %d -> outChan: no more files.\n", disk_name, i)
 
 				co <- nil
 
 				continue
 			}
 
-			sha1, code := SHA1(file.path)
+			sha1, code := GetSHA1(file.path)
 			file.sha1 = sha1
 			file.status = code
 
@@ -42,47 +40,38 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, i int, ci <-chan *File, co
 }
 
 func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan *File, ce chan<- bool) {
-	wg.Add(1)
 	defer wg.Done()
 
 	var db *sql.DB = g_dbs[disk_name]
 
 	total := len(g_map_files[disk_name])
-	divisor := int(total / 50)
-
-	println("__________________________________________________")
+	divisor := int(total / 20)
 
 	count := 0
 	for {
 		select {
 		case <-ctx.Done():
-			println("writer: stop.")
+			fmt.Printf("%s: writer stop.\n", disk_name)
 			return
 
 		case file := <-co:
 
 			if file == nil {
-				println("outChan -> writer -> endChan: no more files.\n")
+				fmt.Printf("%s: outChan -> writer -> endChan: no more files.\n", disk_name)
 				ce <- true
 
 				continue
 			}
-
-			// fmt.Printf("%d/%d\twriter <- outChain: %d  %x  %s\n", count, total, file.status, file.sha1, file.path)
 
 			DBUpdateFile(db, file)
 
 			count++
 
 			if count%divisor == 0 {
-				print(".")
-			}
-			if count >= total {
-				println()
+				fmt.Printf("%s: %d%%\n", disk_name, count*100/total+1)
 			}
 
 		default:
-			// println("writer: waiting for signal...")
 			time.Sleep(time.Millisecond)
 		}
 	}

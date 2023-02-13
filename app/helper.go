@@ -151,7 +151,7 @@ func GetDBPath(disk_name string) string {
 	return fmt.Sprintf("%s/%s%s", DB_DIR, disk_name, DB_EXT)
 }
 
-func SHA1(path string) (string, int8) {
+func GetSHA1(path string) (string, int8) {
 
 	file, err := os.Open(path)
 	if err != nil {
