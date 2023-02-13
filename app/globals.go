@@ -29,8 +29,8 @@ const SQL_CREATE_FILES string = "create-files-table"
 const SQL_ADD_DIR string = "add-dir"
 const SQL_ADD_FILE string = "add-file"
 
-const SQL_ADD_DIRS string = "INSERT INTO dirs (id, name, parent_id, mod_time) VALUES\n"
-const SQL_ADD_FILES string = "INSERT INTO files (id, name, parent_id, size, mod_time) VALUES\n"
+const SQL_ADD_DIRS string = "add-dirs"
+const SQL_ADD_FILES string = "add-files"
 
 const SQL_COUNT_DIRS string = "get-dirs-count"
 const SQL_COUNT_FILES string = "get-files-count"

@@ -81,8 +81,9 @@ func InitMaps(disk_name string, disk_path string) {
 
 	var dir Dir
 	dir.id = GenUID(disk_name, &g_dirs_counter)
-	dir.name = disk_path
 	dir.parent_id = "0"
+	dir.name = disk_path
+	dir.path = disk_path
 
 	g_map_dirs[dir.id] = &dir
 }
@@ -96,12 +97,10 @@ func ReadTree(disk_name string) {
 }
 
 func WriteDB(disk_name string) {
-
 	var db *sql.DB = g_dbs[GetDBName(disk_name)]
 
 	InsertDirs(db, INSERT_COUNT)
 	InsertFiles(db, INSERT_COUNT)
-
 }
 
 func QueryCount(disk_name string) {
@@ -121,6 +120,7 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 	items, _ := ioutil.ReadDir(path)
 	for _, item := range items {
 		item_path := path + "/" + item.Name()
+		item_path = strings.Replace(item_path, "//", "/", -1)
 
 		if IsHidden(item_path) {
 			continue
@@ -130,8 +130,9 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 
 			var sub Dir
 			sub.id = GenUID(disk_name, &g_dirs_counter)
-			sub.name = item.Name()
 			sub.parent_id = dir.id
+			sub.name = item.Name()
+			sub.path = item_path
 			sub.mod_time = item.ModTime().Format(TIME_FORMAT)
 
 			g_map_dirs[sub.id] = &sub
@@ -142,8 +143,9 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 
 			var file File
 			file.id = GenUID(disk_name, &g_files_counter)
-			file.name = item.Name()
 			file.parent_id = dir.id
+			file.name = item.Name()
+			file.path = item_path
 			file.size = item.Size()
 			file.mod_time = item.ModTime().Format(TIME_FORMAT)
 
@@ -169,7 +171,7 @@ func InsertDirs(db *sql.DB, count int) {
 
 		if n >= count || m >= len(g_map_dirs) {
 
-			stmt := SQL_ADD_DIRS + strings.Join(marks, ",\n")
+			stmt := g_dot.QueryMap()[SQL_ADD_DIRS] + strings.Join(marks, ",\n")
 
 			_, err := db.Exec(stmt, args...)
 			Check(err, "在 dirs 表中批量插入数据失败")
@@ -198,7 +200,7 @@ func InsertFiles(db *sql.DB, count int) {
 
 		if n >= count || m >= len(g_map_files) {
 
-			stmt := SQL_ADD_FILES + strings.Join(marks, ",\n")
+			stmt := g_dot.QueryMap()[SQL_ADD_FILES] + strings.Join(marks, ",\n")
 
 			_, err := db.Exec(stmt, args...)
 			Check(err, "在 files 表中批量插入数据失败")
