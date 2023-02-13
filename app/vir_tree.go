@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sync"
 )
 
 func VirTree() error {
@@ -24,13 +25,36 @@ func VirTree() error {
 	println()
 	MakeDiskDirs()
 
-	for name, path := range g_disks {
-		GenVirTree(name, path)
-		println()
-	}
+	MTVerTree()
 
+	println()
 	println("gen virtual links done!")
 	return nil
+}
+
+func MTVerTree() {
+	println("每个 disk 启动一个线程，先获取目录树，然后创建虚拟目录树")
+
+	var wg sync.WaitGroup
+
+	for name, path := range g_disks {
+		wg.Add(1)
+		go VirTreeWorker(&wg, name, path)
+	}
+
+	wg.Wait()
+}
+
+func VirTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
+	defer wg.Done()
+
+	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
+
+	vir_path := VIR_DIR + "/" + disk_name
+
+	VirDir(vir_path, disk_path)
+
+	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
 func CheckNoDiskDirExist() {
@@ -47,14 +71,6 @@ func CheckNoDiskDirExist() {
 			WaitExit(1)
 		}
 	}
-}
-
-func GenVirTree(disk_name string, disk_path string) {
-	fmt.Printf("遍历 %s : %s\n", disk_name, disk_path)
-
-	vir_path := VIR_DIR + "/" + disk_name
-
-	VirDir(vir_path, disk_path)
 }
 
 func VirDir(vir_path string, real_path string) {
