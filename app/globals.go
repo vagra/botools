@@ -40,6 +40,9 @@ const SQL_GET_FILES_NO_SHA1 string = "get-files-no-sha1"
 const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
 const SQL_MOD_FILE_STATUS string = "mod-file-status"
 
+const SQL_TRIM_DIR_IDS string = "trim-dir-ids"
+const SQL_TRIM_FILE_IDS string = "trim-file-ids"
+
 const GET_TREE_LOG string = "get_tree.log"
 const GEN_LINK_LOG string = "gen_link.log"
 const CHECKSUM_LOG string = "checksum.log"
@@ -63,16 +66,18 @@ const WELCOME string = `
 BOTOOLS - bot.sanxuezang.com toolchain
 
 请输入数字并回车来启动对应的子程序：
-1)  init_db: 初始化数据库
-    若数据库文件不存在就新建；若已存在，则会删除再重建，慎重。
-2)  get_tree: 获取目录树
-    获取指定根目录下的文件夹、文件的路径和元数据，保存到数据库。
-3)  get_size: 获取文件夹大小
-    基于现有数据库，获取每一个文件夹的大小。
-4)  checksum: 获取文件校验和
-    基于现有数据库，获取每一个文件的 SHA1 校验和。
-5)  vir_tree: 生成虚拟目录树
-    不生成数据库，而是用软链接的方式生成虚拟的目录树。
-0)  exit: 退出程序
+1)    init_db: 初始化数据库
+      若数据库文件不存在就新建；若已存在，则会删除再重建，慎重。
+2)    get_tree: 获取目录树
+      获取指定根目录下的文件夹、文件的路径和元数据，保存到数据库。
+3)    get_size: 获取文件夹大小
+      基于现有数据库，获取每一个文件夹的大小。
+4)    checksum: 获取文件校验和
+      基于现有数据库，获取每一个文件的 SHA1 校验和。
+5)    vir_tree: 生成虚拟目录树
+      不生成数据库，而是用软链接的方式生成虚拟的目录树。
+101)  trim_ids: 截短 ID
+      一次性临时维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位
+0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`

@@ -2,8 +2,8 @@
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS "dirs" (
-	"id" VARCHAR(64) NOT NULL UNIQUE,
-	"parent_id" VARCHAR(64) NOT NULL DEFAULT '0',
+	"id" VARCHAR(32) NOT NULL UNIQUE,
+	"parent_id" VARCHAR(32) NOT NULL DEFAULT '0',
 	"name" TEXT NOT NULL DEFAULT '',
 	"path" TEXT NOT NULL DEFAULT '',
 	"size" INTEGER NOT NULL DEFAULT 0,
@@ -17,8 +17,8 @@ COMMIT;
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS "files" (
-	"id" VARCHAR(64) NOT NULL UNIQUE,
-	"parent_id" VARCHAR(64) NOT NULL DEFAULT '',
+	"id" VARCHAR(32) NOT NULL UNIQUE,
+	"parent_id" VARCHAR(32) NOT NULL DEFAULT '',
 	"name" TEXT NOT NULL DEFAULT '',
 	"path" TEXT NOT NULL DEFAULT '',
 	"size" INTEGER NOT NULL DEFAULT 0,
@@ -60,3 +60,8 @@ UPDATE files SET sha1 = ? WHERE id = ?;
 -- name: mod-file-status
 UPDATE files SET status = ? WHERE id = ?;
 
+-- name: trim-dir-ids
+UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
+
+-- name: trim-file-ids
+UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');

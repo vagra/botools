@@ -25,7 +25,7 @@ func Welcome() {
 			continue
 		}
 
-		if step < 0 || step > STEP_COUNT {
+		if step < 0 || (step > STEP_COUNT && step < 100) {
 			println("请输入前面列举的有效数字")
 			continue
 		}
@@ -57,6 +57,8 @@ func Run(step int) error {
 		err = CheckSum()
 	case 5:
 		err = VirTree()
+	case 101:
+		err = TrimIDs()
 	case 0:
 		Exit(0)
 	default:

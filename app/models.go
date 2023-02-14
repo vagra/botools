@@ -115,3 +115,17 @@ func DBUpdateFileStatus(db *sql.DB, file *File) {
 		log.Printf("db update file status error: %s\n" + err.Error())
 	}
 }
+
+func DBTrimDirIDs(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_TRIM_DIR_IDS)
+	if err != nil {
+		log.Printf("db trim dir ids error: %s\n" + err.Error())
+	}
+}
+
+func DBTrimFileIDs(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_TRIM_FILE_IDS)
+	if err != nil {
+		log.Printf("db trim file ids error: %s\n" + err.Error())
+	}
+}

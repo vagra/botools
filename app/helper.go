@@ -68,7 +68,7 @@ func Confirm() bool {
 
 func GenUID(prefix string, counter *int64) string {
 	*counter += 1
-	return fmt.Sprintf("%s-%016d", prefix, *counter)
+	return fmt.Sprintf("%s-%08d", prefix, *counter)
 }
 
 func GetUID(prefix string, id int64) string {
