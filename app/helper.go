@@ -72,7 +72,7 @@ func GenUID(prefix string, counter *int64) string {
 }
 
 func GetUID(prefix string, id int64) string {
-	return fmt.Sprintf("%s-%016d", prefix, id)
+	return fmt.Sprintf("%s-%08d", prefix, id)
 }
 
 func PathExist(path string) bool {
