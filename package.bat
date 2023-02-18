@@ -1,0 +1,1 @@
+zip botools.zip botools.exe dot.sql update.sql config.ini.example config.ini 
