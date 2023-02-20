@@ -57,8 +57,10 @@ func Run(step int) error {
 		err = CheckSum()
 	case 5:
 		err = VirTree()
-	case 101:
-		err = TrimIDs()
+		//case 101:
+		//	err = TrimIDs()
+	case 102:
+		err = ModPaths()
 	case 0:
 		Exit(0)
 	default:

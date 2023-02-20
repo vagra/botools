@@ -107,18 +107,7 @@ func GetDirs(disk_name string) {
 
 	fmt.Printf("从数据库 %s 中读取所有的目录\n", db_path)
 
-	rows, err := g_dot.Query(db, SQL_GET_ALL_DIRS)
-	Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 时出错")
-	defer rows.Close()
-
-	for rows.Next() {
-		var dir Dir
-
-		err = rows.Scan(&dir.id, &dir.parent_id, &dir.name, &dir.path)
-		Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 后获取 dir 时出错")
-
-		g_map_dirs[disk_name][dir.id] = &dir
-	}
+	g_map_dirs[disk_name] = DBGetAllDirs(db)
 }
 
 func GetTasks(disk_name string) {
@@ -128,18 +117,9 @@ func GetTasks(disk_name string) {
 
 	fmt.Printf("%s: 从数据库 %s 中读取所有尚未获取 sha1 的文件\n", disk_name, db_path)
 
-	rows, err := g_dot.Query(db, SQL_GET_FILES_NO_SHA1)
-	Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 时出错")
-	defer rows.Close()
+	files := DBGetFilesNoSHA1(db)
 
-	for rows.Next() {
-		var file File
-
-		err = rows.Scan(&file.id, &file.parent_id, &file.name, &file.path)
-		Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 后获取 file 时出错")
-
-		g_map_files[disk_name][file.id] = &file
-	}
+	g_map_files[disk_name] = files
 
 	count := len(g_map_files[disk_name])
 

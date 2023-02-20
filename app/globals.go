@@ -43,6 +43,12 @@ const SQL_MOD_FILE_STATUS string = "mod-file-status"
 const SQL_TRIM_DIR_IDS string = "trim-dir-ids"
 const SQL_TRIM_FILE_IDS string = "trim-file-ids"
 
+const SQL_GET_ROOT_DIR string = "get-root-dir"
+const SQL_MOD_ROOT_DIR string = "mod-root-dir"
+
+const SQL_REPLACE_DIR_PATHS string = "replace-dir-paths"
+const SQL_REPLACE_FILE_PATHS string = "replace-file-paths"
+
 const GET_TREE_LOG string = "get_tree.log"
 const GEN_LINK_LOG string = "gen_link.log"
 const CHECKSUM_LOG string = "checksum.log"
@@ -76,8 +82,10 @@ BOTOOLS - bot.sanxuezang.com toolchain
       基于现有数据库，获取每一个文件的 SHA1 校验和。
 5)    vir_tree: 生成虚拟目录树
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
-101)  trim_ids: 截短 ID
+101)  trim_ids: 截短 ID [已禁用]
       一次性临时维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位
+102)  mod_path: 修改路径
+      临时维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`

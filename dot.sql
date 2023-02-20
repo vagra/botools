@@ -65,3 +65,15 @@ UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_i
 
 -- name: trim-file-ids
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
+
+-- name: get-root-dir
+SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
+
+-- name: mod-root-dir
+UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
+
+-- name: replace-dir-paths
+UPDATE dirs SET path=REPLACE(path, ?, ?);
+
+-- name: replace-file-paths
+UPDATE files SET path=REPLACE(path, ?, ?);

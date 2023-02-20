@@ -76,12 +76,8 @@ func CreateTables() {
 	for db_name, db := range g_dbs {
 		fmt.Printf("初始化数据 %s\n", db_name)
 
-		_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
-		Check(err, "在数据库 "+db_name+" 中创建 dirs 表失败")
-
-		_, err = g_dot.Exec(db, SQL_CREATE_FILES)
-		Check(err, "在数据库 "+db_name+" 中创建 files 表失败")
-
+		DBCreateDirsTable(db)
+		DBCreateFilesTable(db)
 	}
 }
 

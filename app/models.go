@@ -68,6 +68,16 @@ func (f File) AddArgs(args *[]interface{}) {
 	*args = append(*args, f.mod_time)
 }
 
+func DBCreateDirsTable(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
+	Check(err, "创建 dirs 表失败")
+}
+
+func DBCreateFilesTable(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_CREATE_FILES)
+	Check(err, "创建 files 表失败")
+}
+
 func DBQueryDirsCount(db *sql.DB) int64 {
 
 	var count int64 = 0
@@ -128,4 +138,77 @@ func DBTrimFileIDs(db *sql.DB) {
 	if err != nil {
 		log.Printf("db trim file ids error: %s\n" + err.Error())
 	}
+}
+
+func DBReplaceDirPaths(db *sql.DB, src string, dst string) {
+	_, err := g_dot.Exec(db, SQL_REPLACE_DIR_PATHS, src, dst)
+	if err != nil {
+		log.Printf("db replace dir paths error: %s\n" + err.Error())
+	}
+}
+
+func DBReplaceFilePaths(db *sql.DB, src string, dst string) {
+	_, err := g_dot.Exec(db, SQL_REPLACE_FILE_PATHS, src, dst)
+	if err != nil {
+		log.Printf("db replace file paths error: %s\n" + err.Error())
+	}
+}
+
+func DBGetRootDir(db *sql.DB) Dir {
+	row, err := g_dot.QueryRow(db, SQL_GET_ROOT_DIR)
+	Check(err, "执行 SQL "+SQL_GET_ROOT_DIR+" 时出错")
+
+	var dir Dir
+
+	err = row.Scan(&dir.id, &dir.parent_id, &dir.name, &dir.path)
+	Check(err, "执行 SQL "+SQL_GET_ROOT_DIR+" 后获取 dir 时出错")
+
+	return dir
+}
+
+func DBUpdateRootDir(db *sql.DB, path string) {
+	_, err := g_dot.Exec(db, SQL_MOD_ROOT_DIR, path, path)
+	if err != nil {
+		log.Printf("db update root dir error: %s\n" + err.Error())
+	}
+}
+
+func DBGetAllDirs(db *sql.DB) map[string]*Dir {
+
+	var dirs map[string]*Dir = make(map[string]*Dir)
+
+	rows, err := g_dot.Query(db, SQL_GET_ALL_DIRS)
+	Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 时出错")
+	defer rows.Close()
+
+	for rows.Next() {
+		var dir Dir
+
+		err = rows.Scan(&dir.id, &dir.parent_id, &dir.name, &dir.path)
+		Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 后获取 dir 时出错")
+
+		dirs[dir.id] = &dir
+	}
+
+	return dirs
+}
+
+func DBGetFilesNoSHA1(db *sql.DB) map[string]*File {
+
+	var files map[string]*File = make(map[string]*File)
+
+	rows, err := g_dot.Query(db, SQL_GET_FILES_NO_SHA1)
+	Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 时出错")
+	defer rows.Close()
+
+	for rows.Next() {
+		var file File
+
+		err = rows.Scan(&file.id, &file.parent_id, &file.name, &file.path)
+		Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 后获取 file 时出错")
+
+		files[file.id] = &file
+	}
+
+	return files
 }
