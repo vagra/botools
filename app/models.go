@@ -13,12 +13,18 @@ type Disk struct {
 	size int64
 }
 
+type Info struct {
+	id         int64
+	db_version int
+}
+
 type Dir struct {
 	id        string
 	parent_id string
 	name      string
 	path      string
 	size      int64
+	status    int8
 	mod_time  string
 }
 
@@ -34,8 +40,8 @@ type File struct {
 }
 
 func (d Dir) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%s')",
-		d.id, d.parent_id, d.name, d.path, d.size, d.mod_time)
+	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%s')",
+		d.id, d.parent_id, d.name, d.path, d.size, d.status, d.mod_time)
 }
 
 func (d Dir) AddMarks(marks *[]string) {
@@ -68,6 +74,24 @@ func (f File) AddArgs(args *[]interface{}) {
 	*args = append(*args, f.mod_time)
 }
 
+func DBTableExists(db *sql.DB, table_name string) bool {
+	var name string
+
+	row, err := g_dot.QueryRow(db, SQL_CHECK_TABLE, table_name)
+	Check(err, "执行 SQL "+SQL_CHECK_TABLE+" 时出错")
+
+	err = row.Scan(&name)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func DBInfosTableExists(db *sql.DB) bool {
+	return DBTableExists(db, "infos")
+}
+
 func DBCreateDirsTable(db *sql.DB) {
 	_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
 	Check(err, "创建 dirs 表失败")
@@ -76,6 +100,11 @@ func DBCreateDirsTable(db *sql.DB) {
 func DBCreateFilesTable(db *sql.DB) {
 	_, err := g_dot.Exec(db, SQL_CREATE_FILES)
 	Check(err, "创建 files 表失败")
+}
+
+func DBCreateInfosTable(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_CREATE_INFOS)
+	Check(err, "创建 infos 表失败")
 }
 
 func DBQueryDirsCount(db *sql.DB) int64 {
@@ -211,4 +240,30 @@ func DBGetFilesNoSHA1(db *sql.DB) map[string]*File {
 	}
 
 	return files
+}
+
+func DBAddInfo(db *sql.DB, version int) {
+	_, err := g_dot.Exec(db, SQL_ADD_INFO, version)
+	if err != nil {
+		log.Printf("db add info to infos table error: %s\n" + err.Error())
+	}
+}
+
+func DBGetVersion(db *sql.DB) int {
+	row, err := g_dot.QueryRow(db, SQL_GET_VERSION)
+	Check(err, "执行 SQL "+SQL_GET_VERSION+" 时出错")
+
+	var version int
+
+	err = row.Scan(&version)
+	Check(err, "执行 SQL "+SQL_GET_VERSION+" 后获取 db_version 时出错")
+
+	return version
+}
+
+func DBUpdateVersion(db *sql.DB, version int) {
+	_, err := g_dot.Exec(db, SQL_MOD_VERSION, version)
+	if err != nil {
+		log.Printf("db update infos.db_version error: %s\n" + err.Error())
+	}
 }

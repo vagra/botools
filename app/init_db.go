@@ -78,6 +78,7 @@ func CreateTables() {
 
 		DBCreateDirsTable(db)
 		DBCreateFilesTable(db)
+		DBCreateInfosTable(db)
 	}
 }
 

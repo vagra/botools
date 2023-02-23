@@ -20,14 +20,19 @@ const VIR_DIR string = "vir"
 const DISKS string = "disks"
 const FILES string = "files"
 const DIRS string = "dirs"
+const INFOS string = "infos"
 
 const DOT_SQL string = "dot.sql"
 
+const SQL_CHECK_TABLE string = "check-table-exists"
+
 const SQL_CREATE_DIRS string = "create-dirs-table"
 const SQL_CREATE_FILES string = "create-files-table"
+const SQL_CREATE_INFOS string = "create-infos-table"
 
 const SQL_ADD_DIR string = "add-dir"
 const SQL_ADD_FILE string = "add-file"
+const SQL_ADD_INFO string = "add-info"
 
 const SQL_ADD_DIRS string = "add-dirs"
 const SQL_ADD_FILES string = "add-files"
@@ -49,13 +54,17 @@ const SQL_MOD_ROOT_DIR string = "mod-root-dir"
 const SQL_REPLACE_DIR_PATHS string = "replace-dir-paths"
 const SQL_REPLACE_FILE_PATHS string = "replace-file-paths"
 
+const SQL_GET_VERSION string = "get-db-version"
+const SQL_MOD_VERSION string = "mod-db-version"
+
 const GET_TREE_LOG string = "get_tree.log"
 const GEN_LINK_LOG string = "gen_link.log"
 const CHECKSUM_LOG string = "checksum.log"
 
-var g_db_tables []string = []string{DIRS, FILES}
-var g_create_sqls []string = []string{SQL_CREATE_DIRS, SQL_CREATE_FILES}
-var g_count_sqls []string = []string{SQL_COUNT_DIRS, SQL_COUNT_FILES}
+const MIGRATE string = "migrate-v"
+
+var g_db_tables []string = []string{DIRS, FILES, INFOS}
+var g_create_sqls []string = []string{SQL_CREATE_DIRS, SQL_CREATE_FILES, SQL_CREATE_INFOS}
 
 var g_threads int
 var g_disks map[string]string
@@ -67,6 +76,8 @@ var g_map_files map[string]map[string]*File
 
 var g_dirs_counter map[string]*int64
 var g_files_counter map[string]*int64
+
+var g_latest int
 
 const WELCOME string = `
 BOTOOLS - bot.sanxuezang.com toolchain
@@ -82,10 +93,14 @@ BOTOOLS - bot.sanxuezang.com toolchain
       基于现有数据库，获取每一个文件的 SHA1 校验和。
 5)    vir_tree: 生成虚拟目录树
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
+6)    sync_real2db: 从物理目录同步数据库
+      检查物理目录的文件夹和文件，如果不存在了，在数据库中把它们的 status 标记为 1。
 101)  trim_ids: 截短 ID [已禁用]
       一次性临时维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位
 102)  mod_path: 修改路径
       临时维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径
+103)  migrate_db: 升级数据库
+      [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`

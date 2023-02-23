@@ -30,11 +30,25 @@ CREATE TABLE IF NOT EXISTS "files" (
 
 COMMIT;
 
+-- name: create-infos-table
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS "infos" (
+	"id" INTEGER NOT NULL UNIQUE,
+	"db_version" INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+COMMIT;
+
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
 
 -- name: add-file
 INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES(?, ?, ?, ?, ?);
+
+-- name: add-info
+INSERT INTO infos (db_version) VALUES(?);
 
 -- name: add-dirs
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES
@@ -77,3 +91,17 @@ UPDATE dirs SET path=REPLACE(path, ?, ?);
 
 -- name: replace-file-paths
 UPDATE files SET path=REPLACE(path, ?, ?);
+
+-- name: check-table-exists
+SELECT name FROM sqlite_master WHERE type='table' AND name=?;
+
+-- name: get-db-version
+SELECT db_version FROM infos LIMIT 1;
+
+-- name: mod-db-version
+UPDATE infos SET db_version=?;
+
+-- name: migrate-v2
+ALTER TABLE dirs
+ADD COLUMN
+"status" INTEGER NOT NULL DEFAULT 0;
