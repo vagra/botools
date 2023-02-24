@@ -15,10 +15,8 @@ func InitDB() error {
 	CheckDBsDirExist()
 
 	println()
-	GetDBs()
+	GetNewDBs()
 	ReadSQL()
-
-	CheckNoDBExist()
 
 	println()
 	CreateTables()
@@ -41,18 +39,24 @@ func CheckDBsDirExist() {
 	}
 }
 
-func CheckNoDBExist() {
-	if AnyDBExist() {
-		println()
-		println("初始化数据库会删除现有数据库，请谨慎操作！")
-		println("您确定要删除现有的数据库文件？请输入 yes 或 no ：")
+func GetNewDBs() {
+	g_dbs = make(map[string]*sql.DB)
 
-		if Confirm() {
-			println()
-			DeleteDB()
-		} else {
-			WaitExit(1)
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		if FileExist(db_path) {
+			fmt.Printf("数据库 %s 已存在，跳过\n", db_path)
+			continue
 		}
+
+		fmt.Printf("新建数据库 %s\n", db_path)
+
+		db, err := sql.Open("sqlite3", db_path)
+		Check(err, "打开数据库 "+db_path+" 失败")
+
+		g_dbs[disk_name] = db
 	}
 }
 
