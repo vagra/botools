@@ -63,6 +63,8 @@ const CHECKSUM_LOG string = "checksum.log"
 
 const MIGRATE string = "migrate-v"
 
+const MAX_CHAN int = 100
+
 var g_db_tables []string = []string{DIRS, FILES, INFOS}
 var g_create_sqls []string = []string{SQL_CREATE_DIRS, SQL_CREATE_FILES, SQL_CREATE_INFOS}
 

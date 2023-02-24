@@ -66,8 +66,8 @@ func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string, disk_path string)
 
 	var wg sync.WaitGroup
 
-	inChan := make(chan *File, 1000)
-	outChan := make(chan *File, 1000)
+	inChan := make(chan *File, MAX_CHAN)
+	outChan := make(chan *File, MAX_CHAN)
 	endChan := make(chan bool)
 
 	ctx, cancel := context.WithCancel(context.Background())
