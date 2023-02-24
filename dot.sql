@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS "infos" (
 
 COMMIT;
 
+INSERT INTO infos (db_version) VALUES(1);
+
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
 

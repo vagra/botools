@@ -22,15 +22,14 @@ func GetTree() error {
 	CheckConfig()
 
 	println()
-	GetDBs()
 	ReadSQL()
 
 	println()
-	CheckAllDBExist()
-	CheckAllDBNoData()
+	GetEmptyDBs()
 
 	InitMaps()
 
+	println()
 	MTGetTree()
 
 	println()
@@ -43,7 +42,9 @@ func MTGetTree() {
 
 	var wg sync.WaitGroup
 
-	for name, path := range g_disks {
+	for name := range g_dbs {
+		path := g_disks[name]
+
 		wg.Add(1)
 		go GetTreeWorker(&wg, name, path)
 	}
@@ -63,6 +64,38 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
 	ReportCount(disk_name, disk_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
+}
+
+func GetEmptyDBs() {
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExist(db_path)
+
+		db, err := sql.Open("sqlite3", db_path)
+		Check(err, "打开数据库 "+db_path+" 失败")
+
+		if DBHasData(db) {
+			fmt.Printf("数据库 %s 中已有数据，跳过\n", db_path)
+			continue
+		}
+
+		fmt.Printf("数据库 %s 中没有数据，打开...\n", db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
+func CheckDBExist(db_path string) {
+
+	if !DBExist(db_path) {
+		fmt.Printf("数据库 %s 不存在，请重启本程序并选择 1 以初始化数据库\n", db_path)
+		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
+		WaitExit(1)
+	}
 }
 
 func CheckAllDBExist() {

@@ -21,6 +21,7 @@ func MigrateDB() error {
 		WaitExit(1)
 	}
 
+	println()
 	STMigrateDB()
 
 	println()
@@ -49,7 +50,6 @@ func MigrateDBWorker(disk_name string, disk_path string) {
 
 	if !DBInfosTableExists(db) {
 		DBCreateInfosTable(db)
-		DBAddInfo(db, 1)
 	}
 
 	old_ver := DBGetVersion(db)
@@ -97,17 +97,14 @@ func DotLatestVersion() int {
 		version += 1
 
 		sql_name := GetVersionSQL(version)
-		println(sql_name)
 
 		query_map := g_dot.QueryMap()
 
-		stmt, ok := query_map[sql_name]
+		_, ok := query_map[sql_name]
 		if !ok {
 			version -= 1
 			return version
 		}
-
-		println(stmt)
 	}
 }
 

@@ -133,6 +133,18 @@ func DBQueryFilesCount(db *sql.DB) int64 {
 	return count
 }
 
+func DBHasData(db *sql.DB) bool {
+	if DBQueryDirsCount(db) > 0 {
+		return true
+	}
+
+	if DBQueryFilesCount(db) > 0 {
+		return true
+	}
+
+	return false
+}
+
 func DBUpdateFile(db *sql.DB, file *File) {
 	if file.status == 0 {
 		DBUpdateFileSha1(db, file)
