@@ -34,11 +34,14 @@ func STMigrateDB() {
 
 	g_latest = DotLatestVersion()
 	fmt.Printf("数据库最新版本 v%d\n", g_latest)
+	println()
 
 	for name, path := range g_disks {
-		print(path)
+		println(path)
 
 		MigrateDBWorker(name, path)
+
+		println()
 	}
 }
 
