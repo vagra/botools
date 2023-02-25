@@ -72,7 +72,7 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 			}
 
 		default:
-			time.Sleep(time.Millisecond)
+			// time.Sleep(time.Millisecond)
 		}
 	}
 }
