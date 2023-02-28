@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
-	"time"
 )
 
 func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, ci <-chan *File, co chan<- *File) {
@@ -34,7 +33,7 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, c
 			co <- file
 
 		default:
-			time.Sleep(time.Millisecond)
+			//time.Sleep(time.Millisecond)
 		}
 	}
 }

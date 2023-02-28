@@ -14,20 +14,20 @@ func CheckSum() error {
 	println("start: checksum of files")
 
 	file, err := os.OpenFile(CHECKSUM_LOG, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	Check(err, "打开 "+CHECKSUM_LOG+" 时出错")
+	Check(err, "打开 %s 时出错", CHECKSUM_LOG)
 	defer file.Close()
 
 	log.SetOutput(file)
 
-	CheckConfig()
+	ReadConfig()
 
 	println()
-	ReadSQL()
-	GetDBs()
+	ReadDotSQL()
+	GetAllDBs()
 
 	println()
 	CheckAllDBExist()
-	CheckAnyDBHasData()
+	CheckAllDBHasData()
 
 	InitMaps()
 

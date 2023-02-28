@@ -12,13 +12,13 @@ func VirTree() error {
 	println("start: gen virtual links")
 
 	file, err := os.OpenFile(GEN_LINK_LOG, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	Check(err, "打开 "+GEN_LINK_LOG+" 时出错")
+	Check(err, "打开 %s 时出错", GEN_LINK_LOG)
 	defer file.Close()
 
 	log.SetOutput(file)
 
 	println()
-	CheckConfig()
+	ReadConfig()
 	CheckVirDirExist()
 	CheckNoDiskDirExist()
 
@@ -118,7 +118,7 @@ func MakeSymlink(vir_path string, real_path string) {
 func CheckVirDirExist() {
 	if !DirExist(VIR_DIR) {
 		err := os.Mkdir(VIR_DIR, os.ModePerm)
-		Check(err, "创建虚拟目录 "+VIR_DIR+" 时出错")
+		Check(err, "创建虚拟目录 %s 时出错", VIR_DIR)
 	}
 }
 
@@ -158,7 +158,7 @@ func DeleteDiskDirs() {
 		println()
 
 		err := os.RemoveAll(dir_name)
-		Check(err, "删除 "+dir_name+" 目录时出错")
+		Check(err, "删除 %s 目录时出错", dir_name)
 	}
 }
 
@@ -167,6 +167,6 @@ func MakeDiskDirs() {
 		dir_name := VIR_DIR + "/" + name
 
 		err := os.Mkdir(dir_name, os.ModePerm)
-		Check(err, "创建 "+name+" 的根目录 "+dir_name+" 时出错")
+		Check(err, "创建 %s 的根目录 %s 时出错", name, dir_name)
 	}
 }

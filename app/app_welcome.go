@@ -48,7 +48,7 @@ func Run(step int) error {
 
 	switch step {
 	case 1:
-		err = InitDB()
+		err = InitDBs()
 	case 2:
 		err = GetTree()
 	case 3:

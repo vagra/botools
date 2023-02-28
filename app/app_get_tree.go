@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 	"sync"
 )
@@ -13,20 +12,25 @@ import (
 func GetTree() error {
 	println("start: get tree")
 
-	file, err := os.OpenFile(GET_TREE_LOG, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	Check(err, "打开 "+GET_TREE_LOG+" 时出错")
-	defer file.Close()
-
-	log.SetOutput(file)
-
-	CheckConfig()
+	println()
+	InitLog(GET_TREE_LOG)
 
 	println()
-	ReadSQL()
+	ReadConfig()
+
+	println()
+	ReadDotSQL()
+
+	println()
+	CheckAllDBExist()
+
+	println()
+	CheckAllDBInited()
 
 	println()
 	GetEmptyDBs()
 
+	CheckTaskHasDBs()
 	InitMaps()
 
 	println()
@@ -64,80 +68,6 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
 	ReportCount(disk_name, disk_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
-}
-
-func GetEmptyDBs() {
-	g_dbs = make(map[string]*sql.DB)
-
-	for disk_name := range g_disks {
-
-		db_path := GetDBPath(disk_name)
-
-		CheckDBExist(db_path)
-
-		db, err := sql.Open("sqlite3", db_path)
-		Check(err, "打开数据库 "+db_path+" 失败")
-
-		if DBHasData(db) {
-			fmt.Printf("数据库 %s 中已有数据，跳过\n", db_path)
-			continue
-		}
-
-		fmt.Printf("数据库 %s 中没有数据，打开...\n", db_path)
-
-		g_dbs[disk_name] = db
-	}
-}
-
-func CheckDBExist(db_path string) {
-
-	if !DBExist(db_path) {
-		fmt.Printf("数据库 %s 不存在，请重启本程序并选择 1 以初始化数据库\n", db_path)
-		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
-		WaitExit(1)
-	}
-}
-
-func CheckAllDBExist() {
-	if !AllDBExist() {
-		println()
-		println("检查到一些 disk 还没有数据库，请重启本程序并选择 1 以初始化数据库")
-		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
-		WaitExit(1)
-	}
-}
-
-func CheckAllDBNoData() {
-	if HasData() {
-		println("检查到一些数据库中存在数据，为避免重复生成数据，请重启本程序并选择 1 以初始化数据库")
-		fmt.Printf("或者修改 %s 用 # 注释掉不需要处理的 disk\n", CONFIG_INI)
-		WaitExit(1)
-	}
-}
-
-func CheckAnyDBHasData() {
-	if !HasData() {
-		println("数据库中没有数据，请重启本程序并选择 2 以初始化数据库")
-		WaitExit(1)
-	}
-}
-
-func HasData() bool {
-
-	for db_name, db := range g_dbs {
-
-		if DBQueryDirsCount(db) > 0 {
-			fmt.Printf("数据库 %s 的 dirs 表中存在数据\n", db_name)
-			return true
-		}
-
-		if DBQueryFilesCount(db) > 0 {
-			fmt.Printf("数据库 %s 的 files 表中存在数据\n", db_name)
-			return true
-		}
-	}
-
-	return false
 }
 
 func InitMaps() {

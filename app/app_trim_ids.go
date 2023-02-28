@@ -9,11 +9,11 @@ import (
 func TrimIDs() error {
 	println("start: trim dir and file ids")
 
-	CheckConfig()
+	ReadConfig()
 
 	println()
-	GetDBs()
-	ReadSQL()
+	GetAllDBs()
+	ReadDotSQL()
 
 	println()
 	CheckAllDBExist()

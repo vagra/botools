@@ -2,83 +2,75 @@ package app
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 )
 
-type Disk struct {
-	id   int64
-	name string
-	path string
-	size int64
+func DBExist(db_name string) bool {
+	db_path := GetDBPath(db_name)
+
+	if !FileExist(db_path) {
+		return false
+	}
+
+	return true
 }
 
-type Info struct {
-	id         int64
-	db_version int
+func DBOpen(db_path string) *sql.DB {
+	db, err := sql.Open("sqlite3", db_path)
+	Check(err, "打开数据库 %s 失败", db_path)
+
+	return db
 }
 
-type Dir struct {
-	id        string
-	parent_id string
-	name      string
-	path      string
-	size      int64
-	status    int8
-	mod_time  string
+func DBInited(db *sql.DB) ([]string, bool) {
+	var tables []string = []string{}
+
+	if !DBTableExists(db, "dirs") {
+		tables = append(tables, "dirs")
+	}
+	if !DBTableExists(db, "files") {
+		tables = append(tables, "files")
+	}
+	if !DBTableExists(db, "infos") {
+		tables = append(tables, "infos")
+	}
+
+	return tables, len(tables) <= 0
 }
 
-type File struct {
-	id        string
-	parent_id string
-	name      string
-	path      string
-	size      int64
-	status    int8
-	sha1      string
-	mod_time  string
+func DBHasData(db *sql.DB) ([]string, bool) {
+	var tables []string = []string{}
+
+	if DBQueryDirsCount(db) <= 0 {
+		tables = append(tables, "dirs")
+	}
+
+	if DBQueryFilesCount(db) <= 0 {
+		tables = append(tables, "files")
+	}
+
+	return tables, len(tables) <= 0
 }
 
-func (d Dir) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%s')",
-		d.id, d.parent_id, d.name, d.path, d.size, d.status, d.mod_time)
-}
+func DBNoData(db *sql.DB) ([]string, bool) {
+	var tables []string = []string{}
 
-func (d Dir) AddMarks(marks *[]string) {
-	*marks = append(*marks, "(?, ?, ?, ?, ?)")
-}
+	if DBQueryDirsCount(db) > 0 {
+		tables = append(tables, "dirs")
+	}
 
-func (d Dir) AddArgs(args *[]interface{}) {
-	*args = append(*args, d.id)
-	*args = append(*args, d.parent_id)
-	*args = append(*args, d.name)
-	*args = append(*args, d.path)
-	*args = append(*args, d.mod_time)
-}
+	if DBQueryFilesCount(db) > 0 {
+		tables = append(tables, "files")
+	}
 
-func (f File) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%s', '%s')",
-		f.id, f.parent_id, f.name, f.path, f.size, f.sha1, f.mod_time)
-}
-
-func (f File) AddMarks(marks *[]string) {
-	*marks = append(*marks, "(?, ?, ?, ?, ?, ?)")
-}
-
-func (f File) AddArgs(args *[]interface{}) {
-	*args = append(*args, f.id)
-	*args = append(*args, f.parent_id)
-	*args = append(*args, f.name)
-	*args = append(*args, f.path)
-	*args = append(*args, f.size)
-	*args = append(*args, f.mod_time)
+	return tables, len(tables) <= 0
 }
 
 func DBTableExists(db *sql.DB, table_name string) bool {
 	var name string
 
 	row, err := g_dot.QueryRow(db, SQL_CHECK_TABLE, table_name)
-	Check(err, "执行 SQL "+SQL_CHECK_TABLE+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_CHECK_TABLE)
 
 	err = row.Scan(&name)
 	if err != nil {
@@ -112,10 +104,10 @@ func DBQueryDirsCount(db *sql.DB) int64 {
 	var count int64 = 0
 
 	row, err := g_dot.QueryRow(db, SQL_COUNT_DIRS)
-	Check(err, "执行 SQL "+SQL_COUNT_DIRS+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_COUNT_DIRS)
 
 	err = row.Scan(&count)
-	Check(err, "执行 SQL "+SQL_COUNT_DIRS+" 后获取 count 时出错")
+	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_DIRS)
 
 	return count
 }
@@ -125,24 +117,12 @@ func DBQueryFilesCount(db *sql.DB) int64 {
 	var count int64 = 0
 
 	row, err := g_dot.QueryRow(db, SQL_COUNT_FILES)
-	Check(err, "执行 SQL "+SQL_COUNT_FILES+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_COUNT_FILES)
 
 	err = row.Scan(&count)
-	Check(err, "执行 SQL "+SQL_COUNT_FILES+" 后获取 count 时出错")
+	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_FILES)
 
 	return count
-}
-
-func DBHasData(db *sql.DB) bool {
-	if DBQueryDirsCount(db) > 0 {
-		return true
-	}
-
-	if DBQueryFilesCount(db) > 0 {
-		return true
-	}
-
-	return false
 }
 
 func DBUpdateFile(db *sql.DB, file *File) {
@@ -197,12 +177,12 @@ func DBReplaceFilePaths(db *sql.DB, src string, dst string) {
 
 func DBGetRootDir(db *sql.DB) Dir {
 	row, err := g_dot.QueryRow(db, SQL_GET_ROOT_DIR)
-	Check(err, "执行 SQL "+SQL_GET_ROOT_DIR+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_GET_ROOT_DIR)
 
 	var dir Dir
 
 	err = row.Scan(&dir.id, &dir.parent_id, &dir.name, &dir.path)
-	Check(err, "执行 SQL "+SQL_GET_ROOT_DIR+" 后获取 dir 时出错")
+	Check(err, "执行 SQL %s 后获取 dir 时出错", SQL_GET_ROOT_DIR)
 
 	return dir
 }
@@ -219,14 +199,14 @@ func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 	var dirs map[string]*Dir = make(map[string]*Dir)
 
 	rows, err := g_dot.Query(db, SQL_GET_ALL_DIRS)
-	Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_GET_ALL_DIRS)
 	defer rows.Close()
 
 	for rows.Next() {
 		var dir Dir
 
 		err = rows.Scan(&dir.id, &dir.parent_id, &dir.name, &dir.path)
-		Check(err, "执行 SQL "+SQL_GET_ALL_DIRS+" 后获取 dir 时出错")
+		Check(err, "执行 SQL %s 后获取 dir 时出错", SQL_GET_ALL_DIRS)
 
 		dirs[dir.id] = &dir
 	}
@@ -239,14 +219,14 @@ func DBGetFilesNoSHA1(db *sql.DB) map[string]*File {
 	var files map[string]*File = make(map[string]*File)
 
 	rows, err := g_dot.Query(db, SQL_GET_FILES_NO_SHA1)
-	Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_GET_FILES_NO_SHA1)
 	defer rows.Close()
 
 	for rows.Next() {
 		var file File
 
 		err = rows.Scan(&file.id, &file.parent_id, &file.name, &file.path)
-		Check(err, "执行 SQL "+SQL_GET_FILES_NO_SHA1+" 后获取 file 时出错")
+		Check(err, "执行 SQL %s 后获取 file 时出错", SQL_GET_FILES_NO_SHA1)
 
 		files[file.id] = &file
 	}
@@ -263,12 +243,12 @@ func DBAddInfo(db *sql.DB, version int) {
 
 func DBGetVersion(db *sql.DB) int {
 	row, err := g_dot.QueryRow(db, SQL_GET_VERSION)
-	Check(err, "执行 SQL "+SQL_GET_VERSION+" 时出错")
+	Check(err, "执行 SQL %s 时出错", SQL_GET_VERSION)
 
 	var version int
 
 	err = row.Scan(&version)
-	Check(err, "执行 SQL "+SQL_GET_VERSION+" 后获取 db_version 时出错")
+	Check(err, "执行 SQL %s 后获取 db_version 时出错", SQL_GET_VERSION)
 
 	return version
 }

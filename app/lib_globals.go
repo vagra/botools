@@ -60,6 +60,7 @@ const SQL_MOD_VERSION string = "mod-db-version"
 const GET_TREE_LOG string = "get_tree.log"
 const GEN_LINK_LOG string = "gen_link.log"
 const CHECKSUM_LOG string = "checksum.log"
+const REAL2DB_LOG string = "real2db.log"
 
 const MIGRATE string = "migrate-v"
 

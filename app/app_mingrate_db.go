@@ -8,11 +8,11 @@ import (
 func MigrateDB() error {
 	println("start: migrate db")
 
-	CheckConfig()
+	ReadConfig()
 
 	println()
-	GetDBs()
-	ReadSQL()
+	GetAllDBs()
+	ReadDotSQL()
 
 	println()
 	CheckAllDBExist()
@@ -71,7 +71,7 @@ func MigrateDBWorker(disk_name string, disk_path string) {
 		fmt.Printf("执行数据库升级命令 %s\n", sql_name)
 
 		_, err := g_dot.Exec(db, sql_name)
-		Check(err, "执行数据库升级命令 "+sql_name+" 时失败")
+		Check(err, "执行数据库升级命令 %s 时失败", sql_name)
 	}
 
 	if new_ver > old_ver {
@@ -103,8 +103,8 @@ func DotLatestVersion() int {
 
 		query_map := g_dot.QueryMap()
 
-		_, ok := query_map[sql_name]
-		if !ok {
+		_, yes := query_map[sql_name]
+		if !yes {
 			version -= 1
 			return version
 		}

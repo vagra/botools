@@ -9,11 +9,11 @@ import (
 func ModPaths() error {
 	println("start: replace paths in db with new disk path")
 
-	CheckConfig()
+	ReadConfig()
 
 	println()
-	GetDBs()
-	ReadSQL()
+	GetAllDBs()
+	ReadDotSQL()
 
 	println()
 	CheckAllDBExist()
