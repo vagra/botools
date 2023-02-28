@@ -9,19 +9,33 @@ import (
 func TrimIDs() error {
 	println("start: trim dir and file ids")
 
+	println()
 	ReadConfig()
 
 	println()
-	GetAllDBs()
 	ReadDotSQL()
+
+	println()
+	CheckDBsDirExists()
 
 	println()
 	CheckAllDBExists()
 
-	if !ConfirmTrimIDs() {
-		WaitExit(1)
-	}
+	println()
+	CheckAllDBInited()
 
+	println()
+	CheckAllDBHasData()
+
+	println()
+	GetHasDataDBs()
+
+	CheckTaskHasDBs()
+
+	println()
+	ConfirmTrimIDs()
+
+	println()
 	MTTrimIDs()
 
 	println()
@@ -34,7 +48,7 @@ func MTTrimIDs() {
 
 	var wg sync.WaitGroup
 
-	for name := range g_disks {
+	for name := range g_dbs {
 		wg.Add(1)
 		go TrimIDsWorker(&wg, name)
 	}
@@ -47,7 +61,9 @@ func TrimIDsWorker(wg *sync.WaitGroup, disk_name string) {
 
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("%s worker: start trim ids %s\n", disk_name, GetDBPath(disk_name))
+	db_path := GetDBPath(disk_name)
+
+	fmt.Printf("%s worker: start trim ids %s\n", disk_name, db_path)
 
 	DBTrimDirIDs(db)
 	DBTrimFileIDs(db)
@@ -55,10 +71,9 @@ func TrimIDsWorker(wg *sync.WaitGroup, disk_name string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func ConfirmTrimIDs() bool {
-	println()
+func ConfirmTrimIDs() {
 	println("本程序用于把现有数据库中 dirs 和 files 的 id 、 parent_id 从 16 位截短到 8 位")
 	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
-	return Confirm()
+	CheckConfirm()
 }

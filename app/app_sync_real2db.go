@@ -2,32 +2,43 @@ package app
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"sync"
 )
 
 func SyncReal2DB() error {
 	println("start: sync real tree to db")
 
-	file, err := os.OpenFile(REAL2DB_LOG, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	Check(err, "打开 %s 时出错", REAL2DB_LOG)
-	defer file.Close()
+	println()
+	InitLog(REAL2DB_LOG)
 
-	log.SetOutput(file)
-
+	println()
 	ReadConfig()
 
 	println()
 	ReadDotSQL()
 
 	println()
-	GetAllDBs()
-
-	InitMaps()
+	CheckDBsDirExists()
 
 	println()
-	MTGetTree()
+	CheckAllDBExists()
+
+	println()
+	CheckAllDBInited()
+
+	println()
+	CheckAllDBHasData()
+
+	println()
+	GetHasDataDBs()
+
+	CheckTaskHasDBs()
+
+	println()
+	ConfirmReal2DB()
+
+	println()
+	MTReal2DB()
 
 	println()
 	println("sync real tree to db done!")
@@ -36,30 +47,33 @@ func SyncReal2DB() error {
 }
 
 func MTReal2DB() {
-	println("每个 disk 启动一个线程，先获取目录树，然后批量写入数据库")
+	println("每个 disk 启动一个线程，检查物理目录，更新数据库中 dirs 和 files 的 status")
 
 	var wg sync.WaitGroup
 
 	for name := range g_dbs {
-		path := g_disks[name]
-
 		wg.Add(1)
-		go GetTreeWorker(&wg, name, path)
+		go Real2DBWorker(&wg, name)
 	}
 
 	wg.Wait()
 }
 
-func Real2DBWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
+func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
+
+	disk_path := g_disks[disk_name]
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 
-	InitMap(disk_name)
-	InitRootDir(disk_name, disk_path)
 	ReadTree(disk_name)
-	WriteDB(disk_name)
-	ReportCounts(disk_name, disk_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
+}
+
+func ConfirmReal2DB() {
+	println("本程序用于同步物理目录到数据库")
+	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
+
+	CheckConfirm()
 }

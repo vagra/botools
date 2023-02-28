@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const STEP_COUNT int = 5
+const STEP_COUNT int = 6
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
@@ -59,7 +59,7 @@ const SQL_GET_VERSION string = "get-db-version"
 const SQL_MOD_VERSION string = "mod-db-version"
 
 const GET_TREE_LOG string = "get_tree.log"
-const GEN_LINK_LOG string = "gen_link.log"
+const VIR_TREE_LOG string = "vir_tree.log"
 const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
 
@@ -74,6 +74,7 @@ var g_threads int
 var g_disks map[string]string
 var g_dbs map[string]*sql.DB
 var g_dot *dotsql.DotSql
+var g_vdisks map[string]string
 
 var g_map_dirs map[string]map[string]*Dir
 var g_map_files map[string]map[string]*File

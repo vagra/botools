@@ -8,18 +8,28 @@ import (
 func MigrateDB() error {
 	println("start: migrate db")
 
+	println()
 	ReadConfig()
 
 	println()
-	GetAllDBs()
 	ReadDotSQL()
+
+	println()
+	CheckDBsDirExists()
 
 	println()
 	CheckAllDBExists()
 
-	if !ConfirmMigrateDB() {
-		WaitExit(1)
-	}
+	println()
+	CheckAllDBInited()
+
+	println()
+	GetInitedDBs()
+
+	CheckTaskHasDBs()
+
+	println()
+	ConfirmMigrateDB()
 
 	println()
 	STMigrateDB()
@@ -36,20 +46,19 @@ func STMigrateDB() {
 	fmt.Printf("数据库最新版本 v%d\n", g_latest)
 	println()
 
-	for name, path := range g_disks {
-		println(path)
-
-		MigrateDBWorker(name, path)
-
+	for name := range g_dbs {
+		MigrateDBWorker(name)
 		println()
 	}
 }
 
-func MigrateDBWorker(disk_name string, disk_path string) {
+func MigrateDBWorker(disk_name string) {
 
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("%s worker: start migrate db\n", disk_name)
+	db_path := GetDBPath(disk_name)
+
+	fmt.Printf("%s worker: start migrate db %s\n", disk_name, db_path)
 
 	if !DBInfosTableExists(db) {
 		DBCreateInfosTable(db)
@@ -67,7 +76,7 @@ func MigrateDBWorker(disk_name string, disk_path string) {
 			break
 		}
 
-		sql_name := GetVersionSQL(new_ver)
+		sql_name := DotVersionSQL(new_ver)
 		fmt.Printf("执行数据库升级命令 %s\n", sql_name)
 
 		_, err := g_dot.Exec(db, sql_name)
@@ -84,33 +93,9 @@ func MigrateDBWorker(disk_name string, disk_path string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func ConfirmMigrateDB() bool {
-	println()
-	println("本程序用于升级现有数据库到最新版本\n")
+func ConfirmMigrateDB() {
+	println("本程序用于升级现有数据库到最新版本")
 	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
-	return Confirm()
-}
-
-func DotLatestVersion() int {
-
-	var version int = 1
-
-	for {
-		version += 1
-
-		sql_name := GetVersionSQL(version)
-
-		query_map := g_dot.QueryMap()
-
-		_, yes := query_map[sql_name]
-		if !yes {
-			version -= 1
-			return version
-		}
-	}
-}
-
-func GetVersionSQL(version int) string {
-	return fmt.Sprintf("%s%d", MIGRATE, version)
+	CheckConfirm()
 }

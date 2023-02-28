@@ -32,7 +32,7 @@ func Welcome() {
 
 		err = Run(step)
 		if err != nil {
-			println(err)
+			println(err.Error())
 			continue
 		}
 
@@ -59,8 +59,8 @@ func Run(step int) error {
 		err = VirTree()
 	case 6:
 		err = SyncReal2DB()
-		//case 101:
-		//	err = TrimIDs()
+	// case 101:
+	// err = TrimIDs()
 	case 102:
 		err = ModPaths()
 	case 103:
@@ -68,7 +68,7 @@ func Run(step int) error {
 	case 0:
 		Exit(0)
 	default:
-		err = errors.New("只能输入 0 到 " + strconv.Itoa(STEP_COUNT) + " 的整数")
+		err = errors.New("请输入上面列出的可用的数字")
 	}
 
 	return err

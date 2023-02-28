@@ -50,17 +50,17 @@ func MTGetTree() {
 	var wg sync.WaitGroup
 
 	for name := range g_dbs {
-		path := g_disks[name]
-
 		wg.Add(1)
-		go GetTreeWorker(&wg, name, path)
+		go GetTreeWorker(&wg, name)
 	}
 
 	wg.Wait()
 }
 
-func GetTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
+func GetTreeWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
+
+	disk_path := g_disks[disk_name]
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 

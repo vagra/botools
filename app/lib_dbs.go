@@ -64,8 +64,7 @@ func GetNotExistsDBs() {
 
 		fmt.Printf("数据库 %s 不存在，新建...\n", db_path)
 
-		db, err := sql.Open("sqlite3", db_path)
-		Check(err, "打开数据库 %s 失败", db_path)
+		db := DBOpen(db_path)
 
 		g_dbs[disk_name] = db
 	}
@@ -89,6 +88,27 @@ func GetEmptyDBs() {
 		if _, yes := DBNoData(db); !yes {
 			continue
 		}
+		println(db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
+func GetInitedDBs() {
+	println("获取所有已经初始化的数据库")
+
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		CheckDBInited(db, db_path)
+
 		println(db_path)
 
 		g_dbs[disk_name] = db
@@ -119,7 +139,7 @@ func GetHasDataDBs() {
 }
 
 func GetNeedCheckSumDBs() {
-	println("获取还有 files 需要获取 sha1 的数据库")
+	println("获取还有 files 没有 sha1 的数据库")
 
 	g_dbs = make(map[string]*sql.DB)
 
