@@ -8,7 +8,7 @@ import (
 	"syscall"
 )
 
-func PathExist(path string) bool {
+func PathExists(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -21,7 +21,7 @@ func PathExist(path string) bool {
 	return true
 }
 
-func FileExist(path string) bool {
+func FileExists(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -38,7 +38,7 @@ func FileExist(path string) bool {
 	return true
 }
 
-func DirExist(path string) bool {
+func DirExists(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

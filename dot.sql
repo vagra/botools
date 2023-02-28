@@ -43,6 +43,9 @@ COMMIT;
 
 INSERT INTO infos (db_version) VALUES(1);
 
+
+
+
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
 
@@ -52,23 +55,59 @@ INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES(?, ?, ?, ?,
 -- name: add-info
 INSERT INTO infos (db_version) VALUES(?);
 
+
 -- name: add-dirs
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES
 
 -- name: add-files
 INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES
 
+
+
+-- name: check-table-exists
+SELECT name FROM sqlite_master WHERE type='table' AND name=?;
+
+
+-- name: get-root-dir
+SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
+
 -- name: get-dirs-count
 SELECT count(id) FROM dirs;
-
--- name: get-files-count
-SELECT count(id) FROM files;
 
 -- name: get-all-dirs
 SELECT id, parent_id, name, path FROM dirs;
 
--- name: get-files-no-sha1
-SELECT id, parent_id, name, path FROM files WHERE LENGTH(sha1) <= 0;
+
+-- name: get-files-count
+SELECT count(id) FROM files;
+
+-- name: get-no-sha1-files-count
+SELECT count(id) FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;
+
+-- name: get-no-sha1-files
+SELECT id, parent_id, name, path FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;
+
+
+-- name: get-db-version
+SELECT db_version FROM infos LIMIT 1;
+
+
+
+-- name: mod-root-dir
+UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
+
+-- name: trim-dir-ids
+UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
+
+-- name: replace-dir-paths
+UPDATE dirs SET path=REPLACE(path, ?, ?);
+
+
+-- name: trim-file-ids
+UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
+
+-- name: replace-file-paths
+UPDATE files SET path=REPLACE(path, ?, ?);
 
 -- name: mod-file-sha1
 UPDATE files SET sha1 = ? WHERE id = ?;
@@ -76,34 +115,13 @@ UPDATE files SET sha1 = ? WHERE id = ?;
 -- name: mod-file-status
 UPDATE files SET status = ? WHERE id = ?;
 
--- name: trim-dir-ids
-UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
-
--- name: trim-file-ids
-UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
-
--- name: get-root-dir
-SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
-
--- name: mod-root-dir
-UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
-
--- name: replace-dir-paths
-UPDATE dirs SET path=REPLACE(path, ?, ?);
-
--- name: replace-file-paths
-UPDATE files SET path=REPLACE(path, ?, ?);
-
--- name: check-table-exists
-SELECT name FROM sqlite_master WHERE type='table' AND name=?;
-
--- name: get-db-version
-SELECT db_version FROM infos LIMIT 1;
 
 -- name: mod-db-version
 UPDATE infos SET db_version=?;
 
+
+
+
 -- name: migrate-v2
 ALTER TABLE dirs
-ADD COLUMN
-"status" INTEGER NOT NULL DEFAULT 0;
+ADD COLUMN "status" INTEGER NOT NULL DEFAULT 0;

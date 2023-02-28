@@ -19,8 +19,8 @@ func VirTree() error {
 
 	println()
 	ReadConfig()
-	CheckVirDirExist()
-	CheckNoDiskDirExist()
+	CheckVirDirExists()
+	CheckNoDiskDirExists()
 
 	println()
 	MakeDiskDirs()
@@ -57,8 +57,8 @@ func VirTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func CheckNoDiskDirExist() {
-	if AnyDiskDirExist() {
+func CheckNoDiskDirExists() {
+	if AnyDiskDirExists() {
 		println()
 		fmt.Printf("执行本程序会删除 %s 下已有的 disks 虚拟目录，再重新生成\n", VIR_DIR)
 		fmt.Printf("如果您不想删除某个 disk 的虚拟目录，可以在 %s 中把这个 disk 注释起来\n", CONFIG_INI)
@@ -75,8 +75,8 @@ func CheckNoDiskDirExist() {
 
 func VirDir(vir_path string, real_path string) {
 
-	if !DirExist(real_path) {
-		log.Printf("real path not exist: %s\n", real_path)
+	if !DirExists(real_path) {
+		log.Printf("real path not exists: %s\n", real_path)
 		return
 	}
 
@@ -100,7 +100,7 @@ func VirDir(vir_path string, real_path string) {
 }
 
 func MakeVirDir(vir_path string) {
-	if !DirExist(vir_path) {
+	if !DirExists(vir_path) {
 		err := os.Mkdir(vir_path, os.ModePerm)
 		if err != nil {
 			log.Printf("创建虚拟目录 %s 时出错\n", vir_path)
@@ -115,8 +115,8 @@ func MakeSymlink(vir_path string, real_path string) {
 	}
 }
 
-func CheckVirDirExist() {
-	if !DirExist(VIR_DIR) {
+func CheckVirDirExists() {
+	if !DirExists(VIR_DIR) {
 		err := os.Mkdir(VIR_DIR, os.ModePerm)
 		Check(err, "创建虚拟目录 %s 时出错", VIR_DIR)
 	}
@@ -124,7 +124,7 @@ func CheckVirDirExist() {
 
 func CheckDiskPaths() bool {
 	for name, path := range g_disks {
-		if !DirExist(path) {
+		if !DirExists(path) {
 			fmt.Printf("%s 的路径 %s 不存在\n", name, path)
 			fmt.Printf("请检查 %s\n", CONFIG_INI)
 			return false
@@ -133,10 +133,10 @@ func CheckDiskPaths() bool {
 	return true
 }
 
-func AnyDiskDirExist() bool {
+func AnyDiskDirExists() bool {
 	for name := range g_disks {
 		dir_name := VIR_DIR + "/" + name
-		if DirExist(dir_name) {
+		if DirExists(dir_name) {
 			return true
 		}
 	}
@@ -151,7 +151,7 @@ func DeleteDiskDirs() {
 
 		fmt.Printf("删除虚拟目录 %s", dir_name)
 
-		if !DirExist(dir_name) {
+		if !DirExists(dir_name) {
 			println(" (不存在)")
 			continue
 		}

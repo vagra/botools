@@ -5,10 +5,12 @@ import (
 	"log"
 )
 
-func DBExist(db_name string) bool {
+//// query the dbs.
+
+func DBExists(db_name string) bool {
 	db_path := GetDBPath(db_name)
 
-	if !FileExist(db_path) {
+	if !FileExists(db_path) {
 		return false
 	}
 
@@ -66,6 +68,17 @@ func DBNoData(db *sql.DB) ([]string, bool) {
 	return tables, len(tables) <= 0
 }
 
+// files
+
+func DBNeedCheckSum(db *sql.DB) (int64, bool) {
+
+	count := DBQueryNoSHA1FilesCount(db)
+
+	return count, count > 0
+}
+
+//// query if the tables exists.
+
 func DBTableExists(db *sql.DB, table_name string) bool {
 	var name string
 
@@ -80,9 +93,19 @@ func DBTableExists(db *sql.DB, table_name string) bool {
 	return true
 }
 
+func DBDirsTableExists(db *sql.DB) bool {
+	return DBTableExists(db, "dirs")
+}
+
+func DBFilesTableExists(db *sql.DB) bool {
+	return DBTableExists(db, "files")
+}
+
 func DBInfosTableExists(db *sql.DB) bool {
 	return DBTableExists(db, "infos")
 }
+
+//// create the tables.
 
 func DBCreateDirsTable(db *sql.DB) {
 	_, err := g_dot.Exec(db, SQL_CREATE_DIRS)
@@ -99,81 +122,9 @@ func DBCreateInfosTable(db *sql.DB) {
 	Check(err, "创建 infos 表失败")
 }
 
-func DBQueryDirsCount(db *sql.DB) int64 {
+//// query the tables.
 
-	var count int64 = 0
-
-	row, err := g_dot.QueryRow(db, SQL_COUNT_DIRS)
-	Check(err, "执行 SQL %s 时出错", SQL_COUNT_DIRS)
-
-	err = row.Scan(&count)
-	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_DIRS)
-
-	return count
-}
-
-func DBQueryFilesCount(db *sql.DB) int64 {
-
-	var count int64 = 0
-
-	row, err := g_dot.QueryRow(db, SQL_COUNT_FILES)
-	Check(err, "执行 SQL %s 时出错", SQL_COUNT_FILES)
-
-	err = row.Scan(&count)
-	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_FILES)
-
-	return count
-}
-
-func DBUpdateFile(db *sql.DB, file *File) {
-	if file.status == 0 {
-		DBUpdateFileSha1(db, file)
-	} else {
-		DBUpdateFileStatus(db, file)
-	}
-}
-
-func DBUpdateFileSha1(db *sql.DB, file *File) {
-	_, err := g_dot.Exec(db, SQL_MOD_FILE_SHA1, file.sha1, file.id)
-	if err != nil {
-		log.Printf("db update file sha1 error: %s\n", err.Error())
-	}
-}
-
-func DBUpdateFileStatus(db *sql.DB, file *File) {
-	_, err := g_dot.Exec(db, SQL_MOD_FILE_STATUS, file.status, file.id)
-	if err != nil {
-		log.Printf("db update file status error: %s\n" + err.Error())
-	}
-}
-
-func DBTrimDirIDs(db *sql.DB) {
-	_, err := g_dot.Exec(db, SQL_TRIM_DIR_IDS)
-	if err != nil {
-		log.Printf("db trim dir ids error: %s\n" + err.Error())
-	}
-}
-
-func DBTrimFileIDs(db *sql.DB) {
-	_, err := g_dot.Exec(db, SQL_TRIM_FILE_IDS)
-	if err != nil {
-		log.Printf("db trim file ids error: %s\n" + err.Error())
-	}
-}
-
-func DBReplaceDirPaths(db *sql.DB, src string, dst string) {
-	_, err := g_dot.Exec(db, SQL_REPLACE_DIR_PATHS, src, dst)
-	if err != nil {
-		log.Printf("db replace dir paths error: %s\n" + err.Error())
-	}
-}
-
-func DBReplaceFilePaths(db *sql.DB, src string, dst string) {
-	_, err := g_dot.Exec(db, SQL_REPLACE_FILE_PATHS, src, dst)
-	if err != nil {
-		log.Printf("db replace file paths error: %s\n" + err.Error())
-	}
-}
+// dirs
 
 func DBGetRootDir(db *sql.DB) Dir {
 	row, err := g_dot.QueryRow(db, SQL_GET_ROOT_DIR)
@@ -187,11 +138,17 @@ func DBGetRootDir(db *sql.DB) Dir {
 	return dir
 }
 
-func DBUpdateRootDir(db *sql.DB, path string) {
-	_, err := g_dot.Exec(db, SQL_MOD_ROOT_DIR, path, path)
-	if err != nil {
-		log.Printf("db update root dir error: %s\n" + err.Error())
-	}
+func DBQueryDirsCount(db *sql.DB) int64 {
+
+	var count int64 = 0
+
+	row, err := g_dot.QueryRow(db, SQL_COUNT_DIRS)
+	Check(err, "执行 SQL %s 时出错", SQL_COUNT_DIRS)
+
+	err = row.Scan(&count)
+	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_DIRS)
+
+	return count
 }
 
 func DBGetAllDirs(db *sql.DB) map[string]*Dir {
@@ -214,19 +171,46 @@ func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 	return dirs
 }
 
-func DBGetFilesNoSHA1(db *sql.DB) map[string]*File {
+// files
+
+func DBQueryFilesCount(db *sql.DB) int64 {
+
+	var count int64 = 0
+
+	row, err := g_dot.QueryRow(db, SQL_COUNT_FILES)
+	Check(err, "执行 SQL %s 时出错", SQL_COUNT_FILES)
+
+	err = row.Scan(&count)
+	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_FILES)
+
+	return count
+}
+
+func DBQueryNoSHA1FilesCount(db *sql.DB) int64 {
+	var count int64 = 0
+
+	row, err := g_dot.QueryRow(db, SQL_GET_NO_SHA1_FILES_COUNT)
+	Check(err, "执行 SQL %s 时出错", SQL_GET_NO_SHA1_FILES_COUNT)
+
+	err = row.Scan(&count)
+	Check(err, "执行 SQL %s 后获取 count 时出错", SQL_COUNT_FILES)
+
+	return count
+}
+
+func DBGetNoSHA1Files(db *sql.DB) map[string]*File {
 
 	var files map[string]*File = make(map[string]*File)
 
-	rows, err := g_dot.Query(db, SQL_GET_FILES_NO_SHA1)
-	Check(err, "执行 SQL %s 时出错", SQL_GET_FILES_NO_SHA1)
+	rows, err := g_dot.Query(db, SQL_GET_NO_SHA1_FILES)
+	Check(err, "执行 SQL %s 时出错", SQL_GET_NO_SHA1_FILES)
 	defer rows.Close()
 
 	for rows.Next() {
 		var file File
 
 		err = rows.Scan(&file.id, &file.parent_id, &file.name, &file.path)
-		Check(err, "执行 SQL %s 后获取 file 时出错", SQL_GET_FILES_NO_SHA1)
+		Check(err, "执行 SQL %s 后获取 file 时出错", SQL_GET_NO_SHA1_FILES)
 
 		files[file.id] = &file
 	}
@@ -234,12 +218,7 @@ func DBGetFilesNoSHA1(db *sql.DB) map[string]*File {
 	return files
 }
 
-func DBAddInfo(db *sql.DB, version int) {
-	_, err := g_dot.Exec(db, SQL_ADD_INFO, version)
-	if err != nil {
-		log.Printf("db add info to infos table error: %s\n" + err.Error())
-	}
-}
+// infos
 
 func DBGetVersion(db *sql.DB) int {
 	row, err := g_dot.QueryRow(db, SQL_GET_VERSION)
@@ -252,6 +231,82 @@ func DBGetVersion(db *sql.DB) int {
 
 	return version
 }
+
+//// insert into tables.
+
+// infos
+
+func DBAddInfo(db *sql.DB, version int) {
+	_, err := g_dot.Exec(db, SQL_ADD_INFO, version)
+	if err != nil {
+		log.Printf("db add info to infos table error: %s\n" + err.Error())
+	}
+}
+
+//// update the tables.
+
+// dirs
+
+func DBUpdateRootDir(db *sql.DB, path string) {
+	_, err := g_dot.Exec(db, SQL_MOD_ROOT_DIR, path, path)
+	if err != nil {
+		log.Printf("db update root dir error: %s\n" + err.Error())
+	}
+}
+
+func DBTrimDirIDs(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_TRIM_DIR_IDS)
+	if err != nil {
+		log.Printf("db trim dir ids error: %s\n" + err.Error())
+	}
+}
+
+func DBReplaceDirPaths(db *sql.DB, src string, dst string) {
+	_, err := g_dot.Exec(db, SQL_REPLACE_DIR_PATHS, src, dst)
+	if err != nil {
+		log.Printf("db replace dir paths error: %s\n" + err.Error())
+	}
+}
+
+// files
+
+func DBUpdateFile(db *sql.DB, file *File) {
+	if file.status == 0 {
+		DBUpdateFileSha1(db, file)
+	} else {
+		DBUpdateFileStatus(db, file)
+	}
+}
+
+func DBTrimFileIDs(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_TRIM_FILE_IDS)
+	if err != nil {
+		log.Printf("db trim file ids error: %s\n" + err.Error())
+	}
+}
+
+func DBReplaceFilePaths(db *sql.DB, src string, dst string) {
+	_, err := g_dot.Exec(db, SQL_REPLACE_FILE_PATHS, src, dst)
+	if err != nil {
+		log.Printf("db replace file paths error: %s\n" + err.Error())
+	}
+}
+
+func DBUpdateFileSha1(db *sql.DB, file *File) {
+	_, err := g_dot.Exec(db, SQL_MOD_FILE_SHA1, file.sha1, file.id)
+	if err != nil {
+		log.Printf("db update file sha1 error: %s\n", err.Error())
+	}
+}
+
+func DBUpdateFileStatus(db *sql.DB, file *File) {
+	_, err := g_dot.Exec(db, SQL_MOD_FILE_STATUS, file.status, file.id)
+	if err != nil {
+		log.Printf("db update file status error: %s\n" + err.Error())
+	}
+}
+
+// infos
 
 func DBUpdateVersion(db *sql.DB, version int) {
 	_, err := g_dot.Exec(db, SQL_MOD_VERSION, version)

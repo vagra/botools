@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
 	"sync"
 	"time"
 )
@@ -13,24 +11,34 @@ import (
 func CheckSum() error {
 	println("start: checksum of files")
 
-	file, err := os.OpenFile(CHECKSUM_LOG, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	Check(err, "打开 %s 时出错", CHECKSUM_LOG)
-	defer file.Close()
+	println()
+	InitLog(CHECKSUM_LOG)
 
-	log.SetOutput(file)
-
+	println()
 	ReadConfig()
 
 	println()
 	ReadDotSQL()
-	GetAllDBs()
 
 	println()
-	CheckAllDBExist()
+	CheckDBsDirExists()
+
+	println()
+	CheckAllDBExists()
+
+	println()
+	CheckAllDBInited()
+
+	println()
 	CheckAllDBHasData()
 
+	println()
+	GetNeedCheckSumDBs()
+
+	CheckTaskHasDBs()
 	InitMaps()
 
+	println()
 	MTCheckSum()
 
 	println()
@@ -43,24 +51,26 @@ func MTCheckSum() {
 
 	var main_wg sync.WaitGroup
 
-	for name := range g_disks {
+	for name := range g_dbs {
 		InitMap(name)
-		GetTasks(name)
+		GetCheckSumTasks(name)
 	}
 
-	for name, path := range g_disks {
-		if HasTasks(name) {
+	for name := range g_dbs {
+		if HasCheckSumTasks(name) {
 			main_wg.Add(1)
-			go CheckSumWorker(&main_wg, name, path)
+			go CheckSumWorker(&main_wg, name)
 		}
 	}
 
 	main_wg.Wait()
 }
 
-func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string, disk_path string) {
+func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string) {
 
 	defer main_wg.Done()
+
+	disk_path := g_disks[disk_name]
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 
@@ -100,108 +110,96 @@ func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string, disk_path string)
 	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
-func GetDirs(disk_name string) {
+func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, ci <-chan *File, co chan<- *File) {
+	defer wg.Done()
 
-	var db_path string = GetDBPath(disk_name)
-	var db *sql.DB = g_dbs[disk_name]
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("%s: checker %d stop.\n", disk_name, i)
+			return
 
-	fmt.Printf("从数据库 %s 中读取所有的目录\n", db_path)
+		case file := <-ci:
 
-	g_map_dirs[disk_name] = DBGetAllDirs(db)
+			if file == nil {
+				fmt.Printf("%s: inChan -> checker %d -> outChan: no more files.\n", disk_name, i)
+
+				co <- nil
+
+				continue
+			}
+
+			sha1, code := GetSHA1(file.path)
+			file.sha1 = sha1
+			file.status = code
+
+			co <- file
+
+		default:
+			//time.Sleep(time.Millisecond)
+		}
+	}
 }
 
-func GetTasks(disk_name string) {
+func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan *File, ce chan<- bool) {
+	defer wg.Done()
+
+	var db *sql.DB = g_dbs[disk_name]
+
+	total := len(g_map_files[disk_name])
+	divisor := int(total / 20)
+
+	count := 0
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Printf("%s: writer stop.\n", disk_name)
+			return
+
+		case file := <-co:
+
+			if file == nil {
+				fmt.Printf("%s: outChan -> writer -> endChan: no more files.\n", disk_name)
+				ce <- true
+
+				continue
+			}
+
+			DBUpdateFile(db, file)
+
+			count++
+
+			if count%divisor == 0 {
+				fmt.Printf("%s: %d%%\n", disk_name, count*100/total+1)
+			}
+
+		default:
+			// time.Sleep(time.Millisecond)
+		}
+	}
+}
+
+func GetCheckSumTasks(disk_name string) {
 
 	var db_path string = GetDBPath(disk_name)
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("%s: 从数据库 %s 中读取所有尚未获取 sha1 的文件\n", disk_name, db_path)
+	fmt.Printf("%s: 从数据库 %s 中读取没有 sha1 的文件\n", disk_name, db_path)
 
-	files := DBGetFilesNoSHA1(db)
+	files := DBGetNoSHA1Files(db)
 
 	g_map_files[disk_name] = files
 
 	count := len(g_map_files[disk_name])
 
 	if count == 0 {
-		fmt.Printf("%s: 所有文件都已经有了 sha1 值，不再重复获取。\n", disk_name)
+		fmt.Printf("%s: 所有文件都已经有 sha1，不再重复获取。\n", disk_name)
 		return
 	}
 
-	fmt.Printf("%s: 有 %d 个文件需要获取 sha1 值\n", disk_name, count)
+	fmt.Printf("%s: 有 %d 个文件需要获取 sha1\n", disk_name, count)
 }
 
-func HasTasks(disk_name string) bool {
+func HasCheckSumTasks(disk_name string) bool {
 	return len(g_map_files[disk_name]) > 0
-}
-
-func CompDirsPath(disk_name string) {
-	println("合成目录路径")
-
-	var count int64 = 0
-	for {
-		count = GetNoPathDirsCount(disk_name)
-		if count == 0 {
-			break
-		}
-
-		DirsAddParentPath(disk_name)
-	}
-}
-
-func CompFilesPath(disk_name string) {
-	println("合成文件路径")
-
-	FilesAddParentPath(disk_name)
-}
-
-func DirsAddParentPath(disk_name string) {
-
-	for _, dir := range g_map_dirs[disk_name] {
-		if dir.parent_id == "0" {
-			continue
-		}
-
-		if len(dir.path) > 0 {
-			continue
-		}
-
-		parent_path := g_map_dirs[disk_name][dir.parent_id].path
-
-		if len(parent_path) == 0 {
-			continue
-		}
-
-		dir.path = parent_path + "/" + dir.name
-	}
-}
-
-func FilesAddParentPath(disk_name string) {
-
-	for _, file := range g_map_files[disk_name] {
-
-		if len(file.path) > 0 {
-			continue
-		}
-
-		parent_path := g_map_dirs[disk_name][file.parent_id].path
-
-		if len(parent_path) == 0 {
-			continue
-		}
-
-		file.path = parent_path + "/" + file.name
-	}
-}
-
-func GetNoPathDirsCount(disk_name string) int64 {
-
-	var count int64 = 0
-	for _, dir := range g_map_dirs[disk_name] {
-		if len(dir.path) == 0 {
-			count++
-		}
-	}
-
-	return count
 }

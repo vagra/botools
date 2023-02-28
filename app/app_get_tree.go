@@ -22,7 +22,10 @@ func GetTree() error {
 	ReadDotSQL()
 
 	println()
-	CheckAllDBExist()
+	CheckDBsDirExists()
+
+	println()
+	CheckAllDBExists()
 
 	println()
 	CheckAllDBInited()
@@ -65,28 +68,9 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
 	InitRootDir(disk_name, disk_path)
 	ReadTree(disk_name)
 	WriteDB(disk_name)
-	ReportCount(disk_name, disk_path)
+	ReportCounts(disk_name, disk_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
-}
-
-func InitMaps() {
-	g_map_dirs = make(map[string]map[string]*Dir)
-	g_map_files = make(map[string]map[string]*File)
-
-	g_dirs_counter = make(map[string]*int64)
-	g_files_counter = make(map[string]*int64)
-}
-
-func InitMap(disk_name string) {
-	g_map_dirs[disk_name] = make(map[string]*Dir)
-	g_map_files[disk_name] = make(map[string]*File)
-
-	var dirs_counter int64 = 0
-	var files_counter int64 = 0
-
-	g_dirs_counter[disk_name] = &dirs_counter
-	g_files_counter[disk_name] = &files_counter
 }
 
 func InitRootDir(disk_name string, disk_path string) {
@@ -111,7 +95,7 @@ func WriteDB(disk_name string) {
 	InsertFiles(disk_name, INSERT_COUNT)
 }
 
-func ReportCount(disk_name string, disk_path string) {
+func ReportCounts(disk_name string, disk_path string) {
 	var db *sql.DB = g_dbs[disk_name]
 
 	fmt.Printf("%s %s\n", disk_name, disk_path)
@@ -123,8 +107,8 @@ func ReportCount(disk_name string, disk_path string) {
 
 func ReadDir(disk_name string, dir *Dir, path string) {
 
-	if !DirExist(path) {
-		log.Printf("dir not exist: %s\n", path)
+	if !DirExists(path) {
+		log.Printf("dir not exists: %s\n", path)
 		return
 	}
 

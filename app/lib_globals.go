@@ -41,7 +41,8 @@ const SQL_COUNT_DIRS string = "get-dirs-count"
 const SQL_COUNT_FILES string = "get-files-count"
 
 const SQL_GET_ALL_DIRS string = "get-all-dirs"
-const SQL_GET_FILES_NO_SHA1 string = "get-files-no-sha1"
+const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
+const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
 const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
 const SQL_MOD_FILE_STATUS string = "mod-file-status"
 

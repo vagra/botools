@@ -16,7 +16,7 @@ func TrimIDs() error {
 	ReadDotSQL()
 
 	println()
-	CheckAllDBExist()
+	CheckAllDBExists()
 
 	if !ConfirmTrimIDs() {
 		WaitExit(1)

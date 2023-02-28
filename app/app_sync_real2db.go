@@ -59,7 +59,7 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string, disk_path string) {
 	InitRootDir(disk_name, disk_path)
 	ReadTree(disk_name)
 	WriteDB(disk_name)
-	ReportCount(disk_name, disk_path)
+	ReportCounts(disk_name, disk_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }

@@ -16,7 +16,7 @@ func ModPaths() error {
 	ReadDotSQL()
 
 	println()
-	CheckAllDBExist()
+	CheckAllDBExists()
 
 	if !ConfirmModPaths() {
 		WaitExit(1)

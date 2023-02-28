@@ -7,8 +7,12 @@ import (
 	"strings"
 )
 
-func CheckDBsDirExist() {
-	if !DirExist(DB_DIR) {
+func CheckDBsDirExists() {
+	fmt.Printf("检查数据库文件夹 %s 是否存在\n", DB_DIR)
+
+	if !DirExists(DB_DIR) {
+		fmt.Printf("数据库文件夹 %s 不存在，新建...\n", DB_DIR)
+
 		err := os.Mkdir(DB_DIR, os.ModePerm)
 		Check(err, "创建数据库文件夹 %s 时出错", DB_DIR)
 	}
@@ -34,17 +38,18 @@ func GetAllDBs() {
 
 		db_path := GetDBPath(disk_name)
 
+		CheckDBExists(disk_name)
+
 		fmt.Printf("打开数据库 %s\n", db_path)
 
-		db, err := sql.Open("sqlite3", db_path)
-		Check(err, "打开数据库 %s 失败", db_path)
+		db := DBOpen(db_path)
 
 		g_dbs[disk_name] = db
 	}
 }
 
-func GetNotExistDBs() {
-	println("检查不存在的数据库")
+func GetNotExistsDBs() {
+	println("检查还不存在的数据库")
 
 	g_dbs = make(map[string]*sql.DB)
 
@@ -52,7 +57,7 @@ func GetNotExistDBs() {
 
 		db_path := GetDBPath(disk_name)
 
-		if DBExist(disk_name) {
+		if DBExists(disk_name) {
 			fmt.Printf("数据库 %s 已存在，跳过\n", db_path)
 			continue
 		}
@@ -67,7 +72,7 @@ func GetNotExistDBs() {
 }
 
 func GetEmptyDBs() {
-	println("获取 dirs 和 files 表为空的数据库")
+	println("获取所有 dirs 和 files 表为空的数据库")
 
 	g_dbs = make(map[string]*sql.DB)
 
@@ -75,7 +80,7 @@ func GetEmptyDBs() {
 
 		db_path := GetDBPath(disk_name)
 
-		CheckDBExist(disk_name)
+		CheckDBExists(disk_name)
 
 		db := DBOpen(db_path)
 
@@ -90,8 +95,58 @@ func GetEmptyDBs() {
 	}
 }
 
-func CheckDBExist(db_name string) {
-	if !DBExist(db_name) {
+func GetHasDataDBs() {
+	println("获取所有 dirs 和 files 表都有数据的数据库")
+
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		CheckDBInited(db, db_path)
+
+		CheckDBHasData(db, db_path)
+
+		println(db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
+func GetNeedCheckSumDBs() {
+	println("获取还有 files 需要获取 sha1 的数据库")
+
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		CheckDBInited(db, db_path)
+
+		CheckDBHasData(db, db_path)
+
+		if _, yes := DBNeedCheckSum(db); !yes {
+			continue
+		}
+
+		println(db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
+func CheckDBExists(db_name string) {
+	if !DBExists(db_name) {
 		db_path := GetDBPath(db_name)
 		fmt.Printf("数据库 %s 不存在\n", db_path)
 		println("请重启本程序并选择 1 以初始化该数据库")
@@ -125,10 +180,10 @@ func CheckDBNoData(db *sql.DB, db_path string) {
 	}
 }
 
-func CheckAllDBExist() {
+func CheckAllDBExists() {
 	println("检查是否所有的数据库都存在")
 
-	if paths, yes := AllDBExist(); !yes {
+	if paths, yes := AllDBExists(); !yes {
 		println("检查到如下数据库还不存在：")
 		fmt.Printf("%s\n", paths)
 		println("请重启本程序并选择 1 以初始化数据库")
@@ -158,13 +213,13 @@ func CheckAllDBHasData() {
 	}
 }
 
-func AllDBExist() ([]string, bool) {
+func AllDBExists() ([]string, bool) {
 	var paths []string = []string{}
 
 	for db_name := range g_dbs {
 		db_path := GetDBPath(db_name)
 
-		if !DBExist(db_name) {
+		if !DBExists(db_name) {
 			paths = append(paths, db_path)
 		}
 	}

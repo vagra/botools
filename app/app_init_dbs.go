@@ -10,13 +10,15 @@ func InitDBs() error {
 
 	println()
 	ReadConfig()
-	CheckDBsDirExist()
 
 	println()
 	ReadDotSQL()
 
 	println()
-	GetNotExistDBs()
+	CheckDBsDirExists()
+
+	println()
+	GetNotExistsDBs()
 
 	println()
 	STInitDBs()

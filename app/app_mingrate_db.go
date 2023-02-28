@@ -15,7 +15,7 @@ func MigrateDB() error {
 	ReadDotSQL()
 
 	println()
-	CheckAllDBExist()
+	CheckAllDBExists()
 
 	if !ConfirmMigrateDB() {
 		WaitExit(1)
