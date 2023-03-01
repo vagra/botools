@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS "infos" (
 
 COMMIT;
 
-INSERT INTO infos (db_version) VALUES(1);
+INSERT INTO infos (db_version) VALUES(2);
 
 
 
