@@ -70,6 +70,13 @@ func ModPathsWorker(wg *sync.WaitGroup, disk_name string) {
 	old_root := root_dir.path
 	new_root := g_disks[disk_name]
 
+	if new_root == old_root {
+		fmt.Printf("%s worker: same path %s\n", disk_name, old_root)
+		fmt.Printf("%s worker: do nothing.\n", disk_name)
+		fmt.Printf("%s worker: stop.\n", disk_name)
+		return
+	}
+
 	fmt.Printf("%s worker: old path %s\n", disk_name, old_root)
 	fmt.Printf("%s worker: new path %s\n", disk_name, new_root)
 
