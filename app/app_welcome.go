@@ -25,7 +25,7 @@ func Welcome() {
 			continue
 		}
 
-		if step < 0 || (step > STEP_COUNT && step < 100) {
+		if step < 0 || step > 200 {
 			println("请输入前面列举的有效数字")
 			continue
 		}
@@ -58,17 +58,21 @@ func Run(step int) error {
 	case 5:
 		err = VirTree()
 	case 6:
+		err = SyncDB2VDB()
+	case 7:
 		err = SyncReal2DB()
 	// case 101:
 	// err = TrimIDs()
 	case 102:
 		err = ModPaths()
 	case 103:
+		err = MoveLong()
+	case 200:
 		err = MigrateDB()
 	case 0:
 		Exit(0)
 	default:
-		err = errors.New("请输入上面列出的可用的数字")
+		err = errors.New("请输入前面列举的有效数字")
 	}
 
 	return err

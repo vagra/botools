@@ -6,7 +6,6 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const STEP_COUNT int = 6
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
@@ -98,14 +97,21 @@ BOTOOLS - bot.sanxuezang.com toolchain
       基于现有数据库，获取每一个文件的 SHA1 校验和。
 5)    vir_tree: 生成虚拟目录树
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
-6)    sync_real2db: 从物理目录同步数据库
-      检查物理目录的文件夹和文件，如果不存在了，在数据库中把它们的 status 标记为 1。
+6)    sync_db2vdb: 从数据库同步到虚拟数据库
+      把数据库中的 dirs 和 files 同步到 vdirs 和 vfiles。
+7)    sync_real2db: 从物理目录同步数据库
+      检查物理目录的文件夹和文件，更新数据库中 dirs, files, vdirs, vfiles。
+
 101)  trim_ids: 截短 ID [已禁用]
-      一次性临时维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位
+      一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径
-      临时维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径
-103)  migrate_db: 升级数据库
-      [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复
+      维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
+103)  move_long: 移动名字超长的文件和文件夹
+      维护功能，把名字超长的文件和文件夹移动到 disk-lang 指定的位置。
+
+200)  migrate_db: 升级数据库
+      [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
+      [2023-03-01 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`
