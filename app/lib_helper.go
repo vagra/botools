@@ -9,8 +9,6 @@ func CheckConfirm() {
 	if !Confirm() {
 		WaitExit(0)
 	}
-
-	return
 }
 
 func Confirm() bool {

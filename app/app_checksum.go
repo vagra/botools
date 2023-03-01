@@ -136,7 +136,7 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, c
 			co <- file
 
 		default:
-			//time.Sleep(time.Millisecond)
+			time.Sleep(time.Millisecond)
 		}
 	}
 }
@@ -174,7 +174,7 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 			}
 
 		default:
-			// time.Sleep(time.Millisecond)
+			time.Sleep(time.Millisecond)
 		}
 	}
 }

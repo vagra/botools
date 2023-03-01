@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 )
 
@@ -72,16 +71,12 @@ func CheckVirDiskExists(vdisk_path string) {
 
 func VirDiskExists(vdisk_path string) bool {
 
-	if DirExists(vdisk_path) {
-		return true
-	}
-
-	return false
+	return DirExists(vdisk_path)
 }
 
 func VirDiskEmpty(vdisk_path string) bool {
 
-	items, _ := ioutil.ReadDir(vdisk_path)
+	items, _ := os.ReadDir(vdisk_path)
 
 	return len(items) <= 0
 }

@@ -37,6 +37,16 @@ type File struct {
 	mod_time  string
 }
 
+func (d Disk) Tuple() string {
+	return fmt.Sprintf("('%d', '%s', '%s', '%d')",
+		d.id, d.name, d.path, d.size)
+}
+
+func (i Info) Tuple() string {
+	return fmt.Sprintf("('%d', '%d')",
+		i.id, i.db_version)
+}
+
 func (d Dir) Tuple() string {
 	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%s')",
 		d.id, d.parent_id, d.name, d.path, d.size, d.status, d.mod_time)

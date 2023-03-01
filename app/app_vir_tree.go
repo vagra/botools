@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -72,7 +71,7 @@ func VirDir(vir_path string, real_path string) {
 		return
 	}
 
-	items, _ := ioutil.ReadDir(real_path)
+	items, _ := os.ReadDir(real_path)
 	for _, item := range items {
 		item_real_path := real_path + "/" + item.Name()
 

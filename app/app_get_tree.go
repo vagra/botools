@@ -3,8 +3,8 @@ package app
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"sync"
 )
@@ -112,7 +112,7 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 		return
 	}
 
-	items, _ := ioutil.ReadDir(path)
+	items, _ := os.ReadDir(path)
 	for _, item := range items {
 		item_path := path + "/" + item.Name()
 		item_path = strings.Replace(item_path, "//", "/", -1)
@@ -128,7 +128,8 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 			sub.parent_id = dir.id
 			sub.name = item.Name()
 			sub.path = item_path
-			sub.mod_time = item.ModTime().Format(TIME_FORMAT)
+			info, _ := item.Info()
+			sub.mod_time = info.ModTime().Format(TIME_FORMAT)
 
 			g_map_dirs[disk_name][sub.id] = &sub
 
@@ -141,8 +142,9 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 			file.parent_id = dir.id
 			file.name = item.Name()
 			file.path = item_path
-			file.size = item.Size()
-			file.mod_time = item.ModTime().Format(TIME_FORMAT)
+			info, _ := item.Info()
+			file.size = info.Size()
+			file.mod_time = info.ModTime().Format(TIME_FORMAT)
 
 			g_map_files[disk_name][file.id] = &file
 		}

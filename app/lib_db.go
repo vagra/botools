@@ -10,11 +10,7 @@ import (
 func DBExists(db_name string) bool {
 	db_path := GetDBPath(db_name)
 
-	if !FileExists(db_path) {
-		return false
-	}
-
-	return true
+	return FileExists(db_path)
 }
 
 func DBOpen(db_path string) *sql.DB {
@@ -86,11 +82,8 @@ func DBTableExists(db *sql.DB, table_name string) bool {
 	Check(err, "执行 SQL %s 时出错", SQL_CHECK_TABLE)
 
 	err = row.Scan(&name)
-	if err != nil {
-		return false
-	}
 
-	return true
+	return err == nil
 }
 
 func DBDirsTableExists(db *sql.DB) bool {
