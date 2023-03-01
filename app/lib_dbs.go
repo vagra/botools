@@ -185,7 +185,7 @@ func CheckDBInited(db *sql.DB, db_path string) {
 
 func CheckDBHasData(db *sql.DB, db_path string) {
 	if tables, yes := DBHasData(db); !yes {
-		fmt.Printf("数据库 %s 的如下表中还没有数据\n", db_path)
+		fmt.Printf("数据库 %s 的如下表还没有数据\n", db_path)
 		fmt.Printf("%s\n", tables)
 		println("请重启本程序并选择 2 以获取目录树")
 		WaitExit(1)
@@ -194,14 +194,14 @@ func CheckDBHasData(db *sql.DB, db_path string) {
 
 func CheckDBNoData(db *sql.DB, db_path string) {
 	if tables, yes := DBNoData(db); !yes {
-		fmt.Printf("数据库 %s 的如下表中存在数据\n", db_path)
+		fmt.Printf("数据库 %s 的如下表存在数据\n", db_path)
 		fmt.Printf("%s\n", tables)
 		WaitExit(1)
 	}
 }
 
 func CheckAllDBExists() {
-	println("检查是否所有的数据库都存在")
+	println("检查是否所有数据库都存在")
 
 	if paths, yes := AllDBExists(); !yes {
 		println("检查到如下数据库还不存在：")
@@ -212,7 +212,7 @@ func CheckAllDBExists() {
 }
 
 func CheckAllDBInited() {
-	println("检查是否所有的数据库都已初始化")
+	println("检查是否所有数据库都已初始化")
 
 	if paths, yes := AllDBInited(); !yes {
 		println("检查到如下数据库还没有初始化：")
@@ -223,10 +223,10 @@ func CheckAllDBInited() {
 }
 
 func CheckAllDBHasData() {
-	println("检查所有的数据库的 dirs 表和 files 表中已有数据")
+	println("检查是否所有数据库的 dirs 表和 files 表都有数据")
 
 	if paths, yes := AllDBHasData(); !yes {
-		println("检查到如下数据库的 dirs 或 files 表中还没有数据：")
+		println("检查到如下数据库的 dirs 或 files 表还没有数据：")
 		fmt.Printf("%s\n", paths)
 		println("请重启本程序并选择 2 以获取目录树")
 		WaitExit(1)

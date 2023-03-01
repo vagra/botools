@@ -31,7 +31,7 @@ func CheckTaskHasVirDisks() {
 }
 
 func CheckAllVirDiskExists() {
-	println("检查是否所有的 vir disks 目录都存在")
+	println("检查是否所有 vir disks 目录都存在")
 
 	for disk_name := range g_disks {
 		vdisk_path := GetVirDiskPath(disk_name)

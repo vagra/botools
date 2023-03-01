@@ -3,7 +3,7 @@ package app
 import "fmt"
 
 func CheckAllRealDiskExists() {
-	println("检查是否所有的 real disks 路径都存在")
+	println("检查是否所有 real disks 路径都存在")
 
 	if disks, yes := AllRealDiskExists(); !yes {
 		println("检查到如下 real disks 的路径不存在")

@@ -171,7 +171,7 @@ func InsertDirs(disk_name string, count int) {
 			stmt := g_dot.QueryMap()[SQL_ADD_DIRS] + strings.Join(marks, ",\n")
 
 			_, err := db.Exec(stmt, args...)
-			Check(err, "在 dirs 表中批量插入数据失败")
+			Check(err, "在 dirs 表批量插入数据失败")
 
 			marks = []string{}
 			args = []interface{}{}
@@ -201,7 +201,7 @@ func InsertFiles(disk_name string, count int) {
 			stmt := g_dot.QueryMap()[SQL_ADD_FILES] + strings.Join(marks, ",\n")
 
 			_, err := db.Exec(stmt, args...)
-			Check(err, "在 files 表中批量插入数据失败")
+			Check(err, "在 files 表批量插入数据失败")
 
 			marks = []string{}
 			args = []interface{}{}
