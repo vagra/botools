@@ -18,7 +18,9 @@ func InitDBs() error {
 	CheckDBsDirExists()
 
 	println()
-	GetNotExistsDBs()
+	GetNotInitedDBs()
+
+	CheckTaskHasDBs()
 
 	println()
 	STInitDBs()
@@ -29,11 +31,6 @@ func InitDBs() error {
 }
 
 func STInitDBs() {
-	if len(g_dbs) <= 0 {
-		println("没有需要初始化的数据库")
-		return
-	}
-
 	println("初始化数据库")
 
 	for db_name, db := range g_dbs {
