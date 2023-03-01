@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func CheckDBsDirExists() {
@@ -65,6 +64,33 @@ func GetNotExistsDBs() {
 		fmt.Printf("数据库 %s 不存在，新建...\n", db_path)
 
 		db := DBOpen(db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
+func GetNotInitedDBs() {
+	println("检查不存在或没有初始化的数据库")
+
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		is_new := !DBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		if _, yes := DBInited(db); yes {
+			continue
+		}
+
+		if is_new {
+			fmt.Printf("数据库 %s 不存在，新建……\n", db_path)
+		} else {
+			fmt.Printf("数据库 %s 没有初始化，打开\n", db_path)
+		}
 
 		g_dbs[disk_name] = db
 	}
@@ -177,7 +203,9 @@ func CheckDBExists(db_name string) {
 func CheckDBInited(db *sql.DB, db_path string) {
 	if tables, yes := DBInited(db); !yes {
 		fmt.Printf("数据库 %s 缺少如下表：\n", db_path)
-		fmt.Printf("%s\n", tables)
+		for _, table := range tables {
+			println(table)
+		}
 		println("请删除或备份该数据库文件，重启本程序并选择 1 以初始化该数据库")
 		WaitExit(1)
 	}
@@ -186,7 +214,9 @@ func CheckDBInited(db *sql.DB, db_path string) {
 func CheckDBHasData(db *sql.DB, db_path string) {
 	if tables, yes := DBHasData(db); !yes {
 		fmt.Printf("数据库 %s 的如下表还没有数据\n", db_path)
-		fmt.Printf("%s\n", tables)
+		for _, table := range tables {
+			println(table)
+		}
 		println("请重启本程序并选择 2 以获取目录树")
 		WaitExit(1)
 	}
@@ -195,7 +225,9 @@ func CheckDBHasData(db *sql.DB, db_path string) {
 func CheckDBNoData(db *sql.DB, db_path string) {
 	if tables, yes := DBNoData(db); !yes {
 		fmt.Printf("数据库 %s 的如下表存在数据\n", db_path)
-		fmt.Printf("%s\n", tables)
+		for _, table := range tables {
+			println(table)
+		}
 		WaitExit(1)
 	}
 }
@@ -205,7 +237,9 @@ func CheckAllDBExists() {
 
 	if paths, yes := AllDBExists(); !yes {
 		println("检查到如下数据库还不存在：")
-		fmt.Printf("%s\n", paths)
+		for _, db_path := range paths {
+			println(db_path)
+		}
 		println("请重启本程序并选择 1 以初始化数据库")
 		WaitExit(1)
 	}
@@ -216,7 +250,9 @@ func CheckAllDBInited() {
 
 	if paths, yes := AllDBInited(); !yes {
 		println("检查到如下数据库还没有初始化：")
-		fmt.Printf("%s\n", paths)
+		for _, db_path := range paths {
+			println(db_path)
+		}
 		println("请重启本程序并选择 1 以初始化这些数据库")
 		WaitExit(1)
 	}
@@ -227,7 +263,9 @@ func CheckAllDBHasData() {
 
 	if paths, yes := AllDBHasData(); !yes {
 		println("检查到如下数据库的 dirs 或 files 表还没有数据：")
-		fmt.Printf("%s\n", paths)
+		for _, db_path := range paths {
+			println(db_path)
+		}
 		println("请重启本程序并选择 2 以获取目录树")
 		WaitExit(1)
 	}
@@ -236,10 +274,10 @@ func CheckAllDBHasData() {
 func AllDBExists() ([]string, bool) {
 	var paths []string = []string{}
 
-	for db_name := range g_dbs {
-		db_path := GetDBPath(db_name)
+	for disk_name := range g_disks {
+		db_path := GetDBPath(disk_name)
 
-		if !DBExists(db_name) {
+		if !DBExists(disk_name) {
 			paths = append(paths, db_path)
 		}
 	}
@@ -250,11 +288,14 @@ func AllDBExists() ([]string, bool) {
 func AllDBInited() ([]string, bool) {
 	var paths []string = []string{}
 
-	for db_name, db := range g_dbs {
-		db_path := GetDBPath(db_name)
+	for disk_name := range g_disks {
+		db_path := GetDBPath(disk_name)
+
+		db := DBOpen(db_path)
 
 		if tables, yes := DBInited(db); !yes {
-			paths = append(paths, db_path, strings.Join(tables, " "))
+			info := fmt.Sprintf("%s\t%s", db_path, tables)
+			paths = append(paths, info)
 		}
 	}
 
@@ -264,11 +305,14 @@ func AllDBInited() ([]string, bool) {
 func AllDBHasData() ([]string, bool) {
 	var paths []string = []string{}
 
-	for db_name, db := range g_dbs {
-		db_path := GetDBPath(db_name)
+	for disk_name := range g_disks {
+		db_path := GetDBPath(disk_name)
+
+		db := DBOpen(db_path)
 
 		if tables, yes := DBHasData(db); !yes {
-			paths = append(paths, db_path, strings.Join(tables, " "))
+			info := fmt.Sprintf("%s\t%s", db_path, tables)
+			paths = append(paths, info)
 		}
 	}
 
