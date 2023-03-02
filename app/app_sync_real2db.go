@@ -66,8 +66,6 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 
-	ReadTree(disk_name)
-
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 

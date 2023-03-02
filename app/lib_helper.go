@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -45,4 +46,17 @@ func GenUID(prefix string, counter *int64) string {
 
 func GetUID(prefix string, id int64) string {
 	return fmt.Sprintf("%s-%08d", prefix, id)
+}
+
+func Str2Num(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		return 0
+	}
+
+	return num
+}
+
+func Num2Str(num int) string {
+	return fmt.Sprintf("%d", num)
 }
