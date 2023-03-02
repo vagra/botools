@@ -44,5 +44,7 @@ func STInitDBs() {
 func InitDBWorker(db *sql.DB) {
 	DBCreateDirsTable(db)
 	DBCreateFilesTable(db)
+	DBCreateVDirsTable(db)
+	DBCreateVFilesTable(db)
 	DBCreateInfosTable(db)
 }

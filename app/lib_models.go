@@ -37,6 +37,25 @@ type File struct {
 	mod_time  string
 }
 
+type VDir struct {
+	id        string
+	parent_id string
+	name      string
+	path      string
+	status    int8
+	mod_time  string
+}
+
+type VFile struct {
+	id        string
+	real_id   string
+	parent_id string
+	name      string
+	path      string
+	status    int8
+	mod_time  string
+}
+
 func (d Disk) Tuple() string {
 	return fmt.Sprintf("('%d', '%s', '%s', '%d')",
 		d.id, d.name, d.path, d.size)
@@ -80,4 +99,14 @@ func (f File) AddArgs(args *[]interface{}) {
 	*args = append(*args, f.path)
 	*args = append(*args, f.size)
 	*args = append(*args, f.mod_time)
+}
+
+func (d VDir) Tuple() string {
+	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%s')",
+		d.id, d.parent_id, d.name, d.path, d.status, d.mod_time)
+}
+
+func (f VFile) Tuple() string {
+	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%d', '%s')",
+		f.id, f.real_id, f.parent_id, f.name, f.path, f.status, f.mod_time)
 }

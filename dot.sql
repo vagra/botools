@@ -31,6 +31,37 @@ CREATE TABLE IF NOT EXISTS "files" (
 
 COMMIT;
 
+-- name: create-vdirs-table
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS "vdirs" (
+	"id"	VARCHAR(32) NOT NULL UNIQUE,
+	"parent_id"	VARCHAR(32) NOT NULL DEFAULT '0',
+	"name"	TEXT NOT NULL DEFAULT '',
+	"path"	TEXT NOT NULL DEFAULT '',
+	"status"	INTEGER NOT NULL DEFAULT 0,
+	"mod_time"	VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
+);
+
+COMMIT;
+
+-- name: create-vfiles-table
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS "vfiles" (
+	"id"	VARCHAR(32) NOT NULL UNIQUE,
+	"real_id"	VARCHAR(32) NOT NULL DEFAULT '',
+	"parent_id"	VARCHAR(32) NOT NULL DEFAULT '',
+	"name"	TEXT NOT NULL DEFAULT '',
+	"path"	TEXT NOT NULL DEFAULT '',
+	"status"	INTEGER NOT NULL DEFAULT 0,
+	"mod_time"	VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
+);
+
+COMMIT;
+
 -- name: create-infos-table
 BEGIN TRANSACTION;
 
@@ -40,12 +71,9 @@ CREATE TABLE IF NOT EXISTS "infos" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 
+INSERT INTO infos (db_version) VALUES(3);
+
 COMMIT;
-
-INSERT INTO infos (db_version) VALUES(2);
-
-
-
 
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
@@ -121,8 +149,40 @@ UPDATE files SET status = ? WHERE id = ?;
 UPDATE infos SET db_version=?;
 
 
-
-
 -- name: migrate-v2
+BEGIN TRANSACTION;
+
 ALTER TABLE dirs
 ADD COLUMN "status" INTEGER NOT NULL DEFAULT 0;
+
+UPDATE infos SET db_version=3;
+
+COMMIT;
+
+-- name: migrate-v3
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS "vdirs" (
+	"id"	VARCHAR(32) NOT NULL UNIQUE,
+	"parent_id"	VARCHAR(32) NOT NULL DEFAULT '0',
+	"name"	TEXT NOT NULL DEFAULT '',
+	"path"	TEXT NOT NULL DEFAULT '',
+	"status"	INTEGER NOT NULL DEFAULT 0,
+	"mod_time"	VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
+);
+
+CREATE TABLE IF NOT EXISTS "vfiles" (
+	"id"	VARCHAR(32) NOT NULL UNIQUE,
+	"real_id"	VARCHAR(32) NOT NULL DEFAULT '',
+	"parent_id"	VARCHAR(32) NOT NULL DEFAULT '',
+	"name"	TEXT NOT NULL DEFAULT '',
+	"path"	TEXT NOT NULL DEFAULT '',
+	"status"	INTEGER NOT NULL DEFAULT 0,
+	"mod_time"	VARCHAR(32) NOT NULL DEFAULT '',
+	PRIMARY KEY("id")
+);
+
+UPDATE infos SET db_version=3;
+
+COMMIT;

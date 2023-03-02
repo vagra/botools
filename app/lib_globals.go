@@ -27,6 +27,8 @@ const SQL_CHECK_TABLE string = "check-table-exists"
 
 const SQL_CREATE_DIRS string = "create-dirs-table"
 const SQL_CREATE_FILES string = "create-files-table"
+const SQL_CREATE_VDIRS string = "create-vdirs-table"
+const SQL_CREATE_VFILES string = "create-vfiles-table"
 const SQL_CREATE_INFOS string = "create-infos-table"
 
 const SQL_ADD_DIR string = "add-dir"
@@ -108,7 +110,7 @@ BOTOOLS - bot.sanxuezang.com toolchain
 
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
-      [2023-03-01 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
+      [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`

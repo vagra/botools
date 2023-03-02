@@ -110,6 +110,16 @@ func DBCreateFilesTable(db *sql.DB) {
 	Check(err, "创建 files 表失败")
 }
 
+func DBCreateVDirsTable(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_CREATE_VDIRS)
+	Check(err, "创建 vdirs 表失败")
+}
+
+func DBCreateVFilesTable(db *sql.DB) {
+	_, err := g_dot.Exec(db, SQL_CREATE_VFILES)
+	Check(err, "创建 vfiles 表失败")
+}
+
 func DBCreateInfosTable(db *sql.DB) {
 	_, err := g_dot.Exec(db, SQL_CREATE_INFOS)
 	Check(err, "创建 infos 表失败")

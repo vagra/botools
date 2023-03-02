@@ -36,7 +36,6 @@ func MigrateDB() error {
 
 	println()
 	println("migrate db done!")
-
 	return nil
 }
 
@@ -84,7 +83,6 @@ func MigrateDBWorker(disk_name string) {
 	}
 
 	if new_ver > old_ver {
-		DBUpdateVersion(db, new_ver)
 		fmt.Printf("数据库版本更新到 v%d\n", new_ver)
 	} else {
 		println("数据库没有更新")
