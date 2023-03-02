@@ -9,10 +9,10 @@ import (
 )
 
 func ReadErrors() {
-	fmt.Printf("读取 %s\n", ERROR_TXT)
+	fmt.Printf("读取 %s\n", ERRORS_TXT)
 
-	file, err := os.Open(ERROR_TXT)
-	Check(err, "打开 %s 时出错", ERROR_TXT)
+	file, err := os.Open(ERRORS_TXT)
+	Check(err, "打开 %s 时出错", ERRORS_TXT)
 	defer file.Close()
 
 	g_errors = make(map[string][]*ErrorItem)
@@ -30,11 +30,11 @@ func ReadErrors() {
 	}
 
 	err = scanner.Err()
-	Check(err, "读取 %s 时出错", ERROR_TXT)
+	Check(err, "读取 %s 时出错", ERRORS_TXT)
 
 	println("如下 disks 存在异常文件或文件夹：")
-	for disk_code, errors := range g_errors {
-		fmt.Printf("%s: %d\n", disk_code, len(errors))
+	for disk_name, errors := range g_errors {
+		fmt.Printf("%s: %d\n", disk_name, len(errors))
 	}
 }
 
@@ -75,4 +75,15 @@ func MatchError(matches []string) (*ErrorItem, bool) {
 	// println(item.Tuple())
 
 	return &item, true
+}
+
+func CheckErrorsRootExists() {
+	fmt.Printf("检查异常文件夹 %s 是否存在\n", g_roots.errors_root)
+
+	if !DirExists(g_roots.errors_root) {
+		fmt.Printf("异常文件夹 %s 不存在，新建...\n", g_roots.errors_root)
+
+		err := os.Mkdir(g_roots.errors_root, os.ModePerm)
+		Check(err, "创建异常文件夹 %s 时出错", g_roots.errors_root)
+	}
 }

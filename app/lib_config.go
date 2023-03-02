@@ -22,6 +22,8 @@ func ReadConfig() {
 		WaitExit(1)
 	}
 
+	println("[disks]")
+
 	for name, path := range g_disks {
 		if len(name) <= 0 || len(path) <= 0 {
 			println("格式：disk-name = disk:/path")
@@ -39,6 +41,14 @@ func ReadConfig() {
 		fmt.Printf("%s = %s\n", name, path)
 	}
 
+	g_roots = &Roots{}
+	g_roots.disks_root = cfg.Section("roots").Key("disks-root").String()
+	g_roots.errors_root = cfg.Section("roots").Key("errors-root").String()
+	g_roots.dups_root = cfg.Section("roots").Key("dups-root").String()
+	g_roots.virs_root = cfg.Section("roots").Key("virs-root").String()
+
+	println(g_roots.Tuple())
+
 	g_threads, err = cfg.Section("checksum").Key("threads").Int()
 	if err != nil {
 		fmt.Printf("请在 %s 中设置 checksum 时的线程数\n", CONFIG_INI)
@@ -47,4 +57,8 @@ func ReadConfig() {
 		println("threads = 10")
 		WaitExit(1)
 	}
+
+	println("[threads]")
+	fmt.Printf("threads = %d\n", g_threads)
+
 }

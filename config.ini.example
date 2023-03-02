@@ -4,5 +4,11 @@ disk-2 = E:/Temp
 disk-3 = E:/Projects
 disk-4 = E:/Hugo
 
+[roots]
+disks-root = X:/disks/
+errors-root = E:/errors/
+dups-root = E:/dups/
+virs-root = E:/virs/
+
 [checksum]
 threads = 10

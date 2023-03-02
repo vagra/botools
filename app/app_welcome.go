@@ -66,7 +66,7 @@ func Run(step int) error {
 	case 102:
 		err = ModPaths()
 	case 103:
-		err = MoveLong()
+		err = MoveErrors()
 	case 200:
 		err = MigrateDB()
 	case 0:

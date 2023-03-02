@@ -10,7 +10,7 @@ const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
 const CONFIG_INI = "config.ini"
-const ERROR_TXT = "errors.txt"
+const ERRORS_TXT = "errors.txt"
 
 const DISK_PRE = "disk-"
 
@@ -66,7 +66,7 @@ const GET_TREE_LOG string = "get_tree.log"
 const VIR_TREE_LOG string = "vir_tree.log"
 const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
-const MOVE_LONG_LOG string = "move_long.log"
+const MOVE_ERRORS_LOG string = "move_errors.log"
 
 const MIGRATE string = "migrate-v"
 
@@ -79,6 +79,8 @@ var g_disks map[string]string
 var g_dbs map[string]*sql.DB
 var g_dot *dotsql.DotSql
 var g_vdisks map[string]string
+
+var g_roots *Roots
 
 var g_errors map[string][]*ErrorItem
 
@@ -113,8 +115,8 @@ BOTOOLS - bot.sanxuezang.com toolchain
       一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径
       维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
-103)  move_long: 移动名字超长的文件和文件夹
-      维护功能，把名字超长的文件和文件夹移动到 disk-lang 指定的位置。
+103)  move_errors: 移动异常文件和文件夹
+      维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹移动到 errors-root。
 
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长

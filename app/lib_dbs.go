@@ -191,6 +191,29 @@ func GetNeedCheckSumDBs() {
 	}
 }
 
+func GetHasErrorDBs() {
+	println("获取所有存在异常文件和文件夹的数据库")
+
+	g_dbs = make(map[string]*sql.DB)
+
+	for disk_name := range g_errors {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		CheckDBInited(db, db_path)
+
+		CheckDBHasData(db, db_path)
+
+		println(db_path)
+
+		g_dbs[disk_name] = db
+	}
+}
+
 func CheckDBExists(db_name string) {
 	if !DBExists(db_name) {
 		db_path := GetDBPath(db_name)

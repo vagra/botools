@@ -60,3 +60,10 @@ func Str2Num(str string) int {
 func Num2Str(num int) string {
 	return fmt.Sprintf("%d", num)
 }
+
+func CleanPath(path string) string {
+	path = strings.Replace(path, "\\", "/", -1)
+	path = strings.Replace(path, "//", "/", -1)
+
+	return path
+}
