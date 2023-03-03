@@ -1,7 +1,9 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 )
 
 func MoveErrors() error {
@@ -58,7 +60,7 @@ func STMoveErrors() {
 	}
 
 	println()
-	println("把数据库中异常 dirs 和 files 的 status 设为 3")
+	println("把数据库中异常 dirs 和 files 的 error 设为 1")
 
 	for name := range g_dbs {
 		MoveDBErrors(name)
@@ -77,7 +79,6 @@ func MoveDiskErrors(disk_name string) {
 		}
 
 		fmt.Printf("src  %s\n", item.RealPath())
-		fmt.Printf("dst  %s\n", item.DestPath())
 
 		if !PassMakeParentDirs(item.DestPath()) {
 			continue
@@ -87,23 +88,61 @@ func MoveDiskErrors(disk_name string) {
 			continue
 		}
 
-		if !PassCopyFile(item.RealPath(), item.DestPath()) {
-			continue
-		}
-
-		println()
+		PassCopyFile(item.RealPath(), item.DestPath())
 	}
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
 func MoveDBErrors(disk_name string) {
-	// disk_path := g_disks[disk_name]
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start update %s\n", disk_name, db_path)
 
+	db := g_dbs[disk_name]
+
+	for _, item := range g_errors[disk_name] {
+		switch item.error_type {
+		case NODIR:
+			MoveDBErrorDir(db_path, db, item)
+		case NOFILE:
+			MoveDBErrorFile(db_path, db, item)
+		default:
+		}
+	}
+
 	fmt.Printf("%s worker: stop.\n", disk_name)
+}
+
+func MoveDBErrorDir(db_path string, db *sql.DB, item *ErrorItem) {
+	path := item.RealPath()
+	id := DBQueryDirIDFromPath(db, path)
+
+	if len(id) <= 0 {
+		fmt.Printf("%s no dir %s\n", db_path, path)
+		log.Printf("%s no dir %s\n", db_path, path)
+		return
+	}
+
+	fmt.Printf("%s   dir\n", id)
+
+	DBModDirError(db, id, 1)
+	DBModDirFilesError(db, id, 1)
+}
+
+func MoveDBErrorFile(db_path string, db *sql.DB, item *ErrorItem) {
+	path := item.RealPath()
+	id := DBQueryFileIDFromPath(db, path)
+
+	if len(id) <= 0 {
+		fmt.Printf("%s no file %s\n", db_path, path)
+		log.Printf("%s no file %s\n", db_path, path)
+		return
+	}
+
+	fmt.Printf("%s  file\n", id)
+
+	DBModFileError(db, id, 1)
 }
 
 func ConfirmMoveErrors() {

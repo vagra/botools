@@ -80,10 +80,10 @@ func ModPathsWorker(wg *sync.WaitGroup, disk_name string) {
 	fmt.Printf("%s worker: old path %s\n", disk_name, old_root)
 	fmt.Printf("%s worker: new path %s\n", disk_name, new_root)
 
-	DBUpdateRootDir(db, new_root)
+	DBModRootDir(db, new_root)
 
-	DBReplaceDirPaths(db, old_root, new_root)
-	DBReplaceFilePaths(db, old_root, new_root)
+	DBReplaceDirsPath(db, old_root, new_root)
+	DBReplaceFilesPath(db, old_root, new_root)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }

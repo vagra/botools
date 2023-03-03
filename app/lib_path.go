@@ -72,11 +72,7 @@ func CopyFile(src string, dst string) bool {
 	}
 
 	err = dst_file.Sync()
-	if !PassErr(err, "copy: 复制文件时出错 %s", dst) {
-		return false
-	}
-
-	return true
+	return PassErr(err, "copy: 复制文件时出错 %s", dst)
 }
 
 func PathExists(path string) bool {

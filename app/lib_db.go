@@ -160,10 +160,10 @@ func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 	return dirs
 }
 
-func DBQueryDirIDFromPath(db *sql.DB) string {
+func DBQueryDirIDFromPath(db *sql.DB, path string) string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_PATH_GET_DIR_ID)
+	row := DBQueryRow(db, SQL_PATH_GET_DIR_ID, path)
 	DBScanRow(row, SQL_PATH_GET_DIR_ID, &id)
 
 	return id
@@ -208,10 +208,10 @@ func DBGetNoSHA1Files(db *sql.DB) map[string]*File {
 	return files
 }
 
-func DBQueryFileIDFromPath(db *sql.DB) string {
+func DBQueryFileIDFromPath(db *sql.DB, path string) string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_PATH_GET_FILE_ID)
+	row := DBQueryRow(db, SQL_PATH_GET_FILE_ID, path)
 	DBScanRow(row, SQL_PATH_GET_FILE_ID, &id)
 
 	return id
@@ -240,59 +240,63 @@ func DBAddInfo(db *sql.DB, version int) {
 
 // dirs
 
-func DBUpdateRootDir(db *sql.DB, path string) {
+func DBModRootDir(db *sql.DB, path string) {
 	DBExec(db, SQL_MOD_ROOT_DIR, path, path)
 }
 
-func DBTrimDirIDs(db *sql.DB) {
-	DBExec(db, SQL_TRIM_DIR_IDS)
+func DBTrimDirsID(db *sql.DB) {
+	DBExec(db, SQL_TRIM_DIRS_ID)
 }
 
-func DBReplaceDirPaths(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_DIR_PATHS, src, dst)
+func DBReplaceDirsPath(db *sql.DB, src string, dst string) {
+	DBExec(db, SQL_REPLACE_DIRS_PATH, src, dst)
 }
 
-func DBUpdateDirError(db *sql.DB, dir *Dir, code int) {
-	DBExec(db, SQL_MOD_DIR_ERROR, code, dir.id)
+func DBModDirError(db *sql.DB, id string, code int) {
+	DBExec(db, SQL_MOD_DIR_ERROR, code, id)
 }
 
 // files
 
-func DBUpdateFile(db *sql.DB, file *File) {
+func DBModFileSha1OrStatus(db *sql.DB, file *File) {
 	if file.status == 0 {
-		DBUpdateFileSha1(db, file)
+		DBModFileSha1(db, file.id, file.sha1)
 	} else {
-		DBUpdateFileStatus(db, file)
+		DBModFileStatus(db, file.id, file.status)
 	}
 }
 
-func DBTrimFileIDs(db *sql.DB) {
-	DBExec(db, SQL_TRIM_FILE_IDS)
+func DBTrimFilesID(db *sql.DB) {
+	DBExec(db, SQL_TRIM_FILES_ID)
 }
 
-func DBReplaceFilePaths(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_FILE_PATHS, src, dst)
+func DBReplaceFilesPath(db *sql.DB, src string, dst string) {
+	DBExec(db, SQL_REPLACE_FILES_PATH, src, dst)
 }
 
-func DBUpdateFileSha1(db *sql.DB, file *File) {
-	DBExec(db, SQL_MOD_FILE_SHA1, file.sha1, file.id)
+func DBModDirFilesError(db *sql.DB, id string, code int8) {
+	DBExec(db, SQL_MOD_DIR_FILES_ERROR, code, id)
 }
 
-func DBUpdateFileStatus(db *sql.DB, file *File) {
-	DBExec(db, SQL_MOD_FILE_STATUS, file.status, file.id)
+func DBModFileSha1(db *sql.DB, id string, sha1 string) {
+	DBExec(db, SQL_MOD_FILE_SHA1, sha1, id)
 }
 
-func DBUpdateFileError(db *sql.DB, file *File, code int) {
-	DBExec(db, SQL_MOD_FILE_ERROR, code, file.id)
+func DBModFileStatus(db *sql.DB, id string, status int8) {
+	DBExec(db, SQL_MOD_FILE_STATUS, status, id)
 }
 
-func DBUpdateFileDupID(db *sql.DB, file *File, dup_id string) {
-	DBExec(db, SQL_MOD_FILE_ERROR, dup_id, file.id)
+func DBModFileError(db *sql.DB, id string, code int8) {
+	DBExec(db, SQL_MOD_FILE_ERROR, code, id)
+}
+
+func DBModFileDupID(db *sql.DB, id string, dup_id string) {
+	DBExec(db, SQL_MOD_FILE_ERROR, dup_id, id)
 }
 
 // infos
 
-func DBUpdateVersion(db *sql.DB, version int) {
+func DBModVersion(db *sql.DB, version int) {
 	DBExec(db, SQL_MOD_VERSION, version)
 }
 
@@ -310,9 +314,9 @@ func DBQueryRow(db *sql.DB, sql_name string, args ...interface{}) *sql.Row {
 	return row
 }
 
-func DBScanRow(row *sql.Row, sql_name string, dest ...any) {
+func DBScanRow(row *sql.Row, sql_name string, dest ...any) bool {
 	err := row.Scan(dest...)
-	Check(err, "db fetch result error after run SQL %s", sql_name)
+	return err == nil
 }
 
 func DBQueryRows(db *sql.DB, sql_name string, args ...interface{}) *sql.Rows {
@@ -322,7 +326,7 @@ func DBQueryRows(db *sql.DB, sql_name string, args ...interface{}) *sql.Rows {
 	return rows
 }
 
-func DBScanRows(rows *sql.Rows, sql_name string, dest ...any) {
+func DBScanRows(rows *sql.Rows, sql_name string, dest ...any) bool {
 	err := rows.Scan(dest...)
-	Check(err, "db fetch result error after run SQL %s", sql_name)
+	return err == nil
 }

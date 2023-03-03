@@ -65,8 +65,8 @@ func TrimIDsWorker(wg *sync.WaitGroup, disk_name string) {
 
 	fmt.Printf("%s worker: start trim ids %s\n", disk_name, db_path)
 
-	DBTrimDirIDs(db)
-	DBTrimFileIDs(db)
+	DBTrimDirsID(db)
+	DBTrimFilesID(db)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }

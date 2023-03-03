@@ -137,21 +137,24 @@ SELECT db_version FROM infos LIMIT 1;
 -- name: mod-root-dir
 UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
 
--- name: trim-dir-ids
+-- name: trim-dirs-id
 UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
--- name: replace-dir-paths
+-- name: replace-dirs-path
 UPDATE dirs SET path=REPLACE(path, ?, ?);
 
 -- name: mod-dir-error
 UPDATE dirs SET error = ? WHERE id = ?;
 
 
--- name: trim-file-ids
+-- name: trim-files-id
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
--- name: replace-file-paths
+-- name: replace-files-path
 UPDATE files SET path=REPLACE(path, ?, ?);
+
+-- name: mod-dir-files-error
+UPDATE files SET error = ? WHERE parent_id = ?;
 
 -- name: mod-file-sha1
 UPDATE files SET sha1 = ? WHERE id = ?;

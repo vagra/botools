@@ -165,7 +165,7 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 				continue
 			}
 
-			DBUpdateFile(db, file)
+			DBModFileSha1OrStatus(db, file)
 
 			count++
 
