@@ -26,13 +26,13 @@ const INFOS string = "infos"
 
 const DOT_SQL string = "dot.sql"
 
-const SQL_CHECK_TABLE string = "check-table-exists"
-
 const SQL_CREATE_DIRS string = "create-dirs-table"
 const SQL_CREATE_FILES string = "create-files-table"
 const SQL_CREATE_VDIRS string = "create-vdirs-table"
 const SQL_CREATE_VFILES string = "create-vfiles-table"
 const SQL_CREATE_INFOS string = "create-infos-table"
+
+const SQL_CHECK_TABLE string = "check-table-exists"
 
 const SQL_ADD_DIR string = "add-dir"
 const SQL_ADD_FILE string = "add-file"
@@ -41,25 +41,29 @@ const SQL_ADD_INFO string = "add-info"
 const SQL_ADD_DIRS string = "add-dirs"
 const SQL_ADD_FILES string = "add-files"
 
-const SQL_COUNT_DIRS string = "get-dirs-count"
-const SQL_COUNT_FILES string = "get-files-count"
-
-const SQL_GET_ALL_DIRS string = "get-all-dirs"
-const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
-const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
-const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
-const SQL_MOD_FILE_STATUS string = "mod-file-status"
-
-const SQL_TRIM_DIR_IDS string = "trim-dir-ids"
-const SQL_TRIM_FILE_IDS string = "trim-file-ids"
-
 const SQL_GET_ROOT_DIR string = "get-root-dir"
-const SQL_MOD_ROOT_DIR string = "mod-root-dir"
+const SQL_COUNT_DIRS string = "get-dirs-count"
+const SQL_GET_ALL_DIRS string = "get-all-dirs"
+const SQL_PATH_GET_DIR_ID string = "get-dir-id-from-path"
 
-const SQL_REPLACE_DIR_PATHS string = "replace-dir-paths"
-const SQL_REPLACE_FILE_PATHS string = "replace-file-paths"
+const SQL_COUNT_FILES string = "get-files-count"
+const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
+const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
+const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
 
 const SQL_GET_VERSION string = "get-db-version"
+
+const SQL_MOD_ROOT_DIR string = "mod-root-dir"
+const SQL_TRIM_DIR_IDS string = "trim-dir-ids"
+const SQL_REPLACE_DIR_PATHS string = "replace-dir-paths"
+const SQL_MOD_DIR_ERROR string = "mod-dir-error"
+
+const SQL_TRIM_FILE_IDS string = "trim-file-ids"
+const SQL_REPLACE_FILE_PATHS string = "replace-file-paths"
+const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
+const SQL_MOD_FILE_STATUS string = "mod-file-status"
+const SQL_MOD_FILE_ERROR string = "mod-file-error"
+
 const SQL_MOD_VERSION string = "mod-db-version"
 
 const GET_TREE_LOG string = "get_tree.log"
@@ -122,6 +126,7 @@ BOTOOLS - bot.sanxuezang.com toolchain
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
       [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
+      [2023-03-03 v4] 为 dirs 和 files 添加 error, dup_id 以标记异常、重复，status 仅用于标记是否存在
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：`

@@ -17,15 +17,23 @@ func Check(err error, format string, args ...any) {
 }
 
 func PassErr(err error, format string, args ...any) bool {
-	ok := err == nil
+	if err != nil {
+		log.Println(err.Error())
+		log.Printf(format, args...)
+		log.Println()
 
-	return PassOk(ok, format, args...)
+		fmt.Printf(format, args...)
+		fmt.Println()
+	}
+
+	return err == nil
 }
 
 func PassOk(ok bool, format string, args ...any) bool {
 	if !ok {
 		log.Printf(format, args...)
 		log.Println()
+
 		fmt.Printf(format, args...)
 		fmt.Println()
 	}

@@ -78,6 +78,13 @@ INSERT INTO infos (db_version) VALUES(4);
 
 COMMIT;
 
+
+
+-- name: check-table-exists
+SELECT name FROM sqlite_master WHERE type='table' AND name=?;
+
+
+
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
 
@@ -96,10 +103,6 @@ INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES
 
 
 
--- name: check-table-exists
-SELECT name FROM sqlite_master WHERE type='table' AND name=?;
-
-
 -- name: get-root-dir
 SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
 
@@ -108,6 +111,9 @@ SELECT count(id) FROM dirs;
 
 -- name: get-all-dirs
 SELECT id, parent_id, name, path FROM dirs;
+
+-- name: get-dir-id-from-path
+SELECT id FROM dirs WHERE path = ? LIMIT 1;
 
 
 -- name: get-files-count
@@ -118,6 +124,9 @@ SELECT count(id) FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;
 
 -- name: get-no-sha1-files
 SELECT id, parent_id, name, path FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;
+
+-- name: get-file-id-from-path
+SELECT id FROM files WHERE path = ? LIMIT 1;
 
 
 -- name: get-db-version
@@ -134,6 +143,9 @@ UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_i
 -- name: replace-dir-paths
 UPDATE dirs SET path=REPLACE(path, ?, ?);
 
+-- name: mod-dir-error
+UPDATE dirs SET error = ? WHERE id = ?;
+
 
 -- name: trim-file-ids
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
@@ -146,6 +158,12 @@ UPDATE files SET sha1 = ? WHERE id = ?;
 
 -- name: mod-file-status
 UPDATE files SET status = ? WHERE id = ?;
+
+-- name: mod-file-error
+UPDATE files SET error = ? WHERE id = ?;
+
+-- name: mod-file-dup-id
+UPDATE files SET dup_id = ? WHERE id = ?;
 
 
 -- name: mod-db-version

@@ -23,6 +23,7 @@ type Dir struct {
 	path      string
 	size      int64
 	status    int8
+	error     int8
 	mod_time  string
 }
 
@@ -33,6 +34,8 @@ type File struct {
 	path      string
 	size      int64
 	status    int8
+	error     int8
+	dup_id    string
 	sha1      string
 	mod_time  string
 }
@@ -67,8 +70,8 @@ func (i Info) Tuple() string {
 }
 
 func (d Dir) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%s')",
-		d.id, d.parent_id, d.name, d.path, d.size, d.status, d.mod_time)
+	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s')",
+		d.id, d.parent_id, d.name, d.path, d.size, d.status, d.error, d.mod_time)
 }
 
 func (d Dir) AddMarks(marks *[]string) {
@@ -84,8 +87,9 @@ func (d Dir) AddArgs(args *[]interface{}) {
 }
 
 func (f File) Tuple() string {
-	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%s', '%s')",
-		f.id, f.parent_id, f.name, f.path, f.size, f.sha1, f.mod_time)
+	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s')",
+		f.id, f.parent_id, f.name, f.path, f.size,
+		f.status, f.error, f.dup_id, f.sha1, f.mod_time)
 }
 
 func (f File) AddMarks(marks *[]string) {

@@ -15,7 +15,11 @@ func GetSHA1(path string) (string, int8) {
 	}
 
 	sha1h := sha1.New()
-	io.Copy(sha1h, file)
+	_, err = io.Copy(sha1h, file)
+	if err != nil {
+		return "", 2
+	}
+
 	sum := hex.EncodeToString(sha1h.Sum(nil))
 
 	return sum, 0
