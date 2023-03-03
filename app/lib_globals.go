@@ -116,8 +116,8 @@ BOTOOLS - bot.sanxuezang.com toolchain
       一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径
       维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
-103)  move_errors: 移动异常文件和文件夹
-      维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹移动到 errors-root。
+103)  move_errors: 复制异常文件和文件夹到指定目录
+      维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹复制到 errors-root。
 
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
