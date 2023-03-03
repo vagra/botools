@@ -75,8 +75,9 @@ func MoveDiskErrors(disk_name string) {
 		if item.error_type == NODIR {
 			continue
 		}
-		println(item.RealPath())
-		println(item.DestPath())
+
+		fmt.Printf("src  %s\n", item.RealPath())
+		fmt.Printf("dst  %s\n", item.DestPath())
 
 		if !PassMakeParentDirs(item.DestPath()) {
 			continue
