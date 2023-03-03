@@ -13,30 +13,14 @@ func ReadConfig() {
 	Check(err, "读取 %s 失败", CONFIG_INI)
 
 	g_disks = cfg.Section("disks").KeysHash()
-	if len(g_disks) <= 0 {
-		fmt.Printf("请在 %s 中设置 disks 列表\n", CONFIG_INI)
-		println("格式：")
-		println("[disks]")
-		println("disk-name = disk:/path/")
-		println("disk-name = disk:/path/")
-		WaitExit(1)
-	}
+	CheckHasDisksConfig()
 
 	println("[disks]")
 
 	for name, path := range g_disks {
-		if len(name) <= 0 || len(path) <= 0 {
-			println("格式：disk-name = disk:/path")
-			println("等号的左右两边不能为空")
-			fmt.Printf("请检查 %s\n", CONFIG_INI)
-			WaitExit(1)
-		}
 
-		if !IsValidName(name) {
-			println("disk-name 只能包含字母、数字、_、-，并且必须以字母开头")
-			fmt.Printf("请检查 %s\n", CONFIG_INI)
-			WaitExit(1)
-		}
+		CheckDiskNameValid(name)
+		CheckDiskPathValid(path)
 
 		fmt.Printf("%s = %s\n", name, path)
 	}
@@ -47,16 +31,13 @@ func ReadConfig() {
 	g_roots.dups_root = cfg.Section("roots").Key("dups-root").String()
 	g_roots.virs_root = cfg.Section("roots").Key("virs-root").String()
 
+	CheckHasRootsConfig()
+
 	println(g_roots.Tuple())
 
 	g_threads, err = cfg.Section("checksum").Key("threads").Int()
-	if err != nil {
-		fmt.Printf("请在 %s 中设置 checksum 时的线程数\n", CONFIG_INI)
-		println("格式：")
-		println("[checksum]")
-		println("threads = 10")
-		WaitExit(1)
-	}
+	Check(err,
+		fmt.Sprintf("请在 %s 中设置 checksum 时的线程数，格式：\n[checksum]\nthreads = 10", CONFIG_INI))
 
 	println("[threads]")
 	fmt.Printf("threads = %d\n", g_threads)

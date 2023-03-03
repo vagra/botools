@@ -74,13 +74,14 @@ const MAX_CHAN int = 1000
 
 const ERROR_REGEX = `^(.*?)\((.*?)(\d+)\) : X:\\disks\\(\d+)\\(.*?)$`
 
-var g_threads int
 var g_disks map[string]string
 var g_dbs map[string]*sql.DB
 var g_dot *dotsql.DotSql
 var g_vdisks map[string]string
 
 var g_roots *Roots
+
+var g_threads int
 
 var g_errors map[string][]*ErrorItem
 

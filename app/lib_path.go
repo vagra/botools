@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"regexp"
 	"syscall"
 )
 
@@ -53,10 +52,6 @@ func DirExists(path string) bool {
 	}
 
 	return true
-}
-
-func IsValidName(name string) bool {
-	return regexp.MustCompile(`^[a-zA-Z]+[a-zA-Z0-9_\-]+$`).MatchString(name)
 }
 
 func IsHidden(path string) bool {
