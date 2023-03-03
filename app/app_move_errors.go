@@ -72,11 +72,24 @@ func MoveDiskErrors(disk_name string) {
 		disk_name, disk_path, g_roots.errors_root)
 
 	for _, item := range g_errors[disk_name] {
-		println(item.path)
-		println(item.ErrorRoot())
-		println(item.DestRoot())
+		if item.error_type == NODIR {
+			continue
+		}
 		println(item.RealPath())
 		println(item.DestPath())
+
+		if !PassMakeParentDirs(item.DestPath()) {
+			continue
+		}
+
+		if !PassFileExists(item.RealPath()) {
+			continue
+		}
+
+		if !PassCopyFile(item.RealPath(), item.DestPath()) {
+			continue
+		}
+
 		println()
 	}
 

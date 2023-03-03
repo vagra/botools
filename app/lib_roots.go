@@ -25,6 +25,8 @@ func CheckHasRootsConfig() {
 		println("errors-root = disk:/path/  # 用于放置异常文件或文件夹")
 		println("dups-root   = disk:/path/  # 用于放置重复文件")
 		println("virs-root   = disk:/path/  # 用于放置虚拟树")
+		println("等号 = 左边不能改动")
+		println("disk-path 必须是以盘符开头的绝对路径，并且要使用正斜杠 /")
 		WaitExit(1)
 	}
 }
