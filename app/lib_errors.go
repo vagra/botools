@@ -67,7 +67,7 @@ func MatchError(matches []string) (*ErrorItem, bool) {
 		return &item, false
 	}
 
-	item.disk_name = DiskNameFromStr(matches[4])
+	item.disk_name = DiskNameFromCode(matches[4])
 	item.error_type = ErrorStr2Type(matches[1])
 	item.error_code = Str2Num(matches[4])
 	item.path = strings.Replace(matches[5], "\\", "/", -1)

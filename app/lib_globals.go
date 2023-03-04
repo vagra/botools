@@ -134,6 +134,7 @@ BOTOOLS - bot.sanxuezang.com toolchain
       维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹复制到 errors-root。
 104)  mod_disk_ids: 修改数据库中的 disk_id
       维护功能，修改了 config.ini 和 dbs 的 disk_name 后，更新数据库中的 dirs 和 files 的 disk_id 。
+
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
       [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）

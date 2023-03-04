@@ -294,6 +294,8 @@ func DBModDirError(db *sql.DB, id string, code int) {
 func DBModDirsDiskID(db *sql.DB, src string, dst string) {
 	DBExec(db, SQL_REPLACE_DIRS_ID, src, dst)
 	DBExec(db, SQL_REPLACE_DIRS_PARENT_ID, src, dst)
+
+	DBExec(db, SQL_REPLACE_FILES_PARENT_ID, src, dst)
 }
 
 // files
@@ -336,7 +338,6 @@ func DBModFileDupID(db *sql.DB, id string, dup_id string) {
 
 func DBModFilesDiskID(db *sql.DB, src string, dst string) {
 	DBExec(db, SQL_REPLACE_FILES_ID, src, dst)
-	DBExec(db, SQL_REPLACE_FILES_PARENT_ID, src, dst)
 }
 
 // infos

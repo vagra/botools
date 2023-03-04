@@ -25,7 +25,7 @@ func (e ErrorItem) Tuple() string {
 }
 
 func (e ErrorItem) DiskCode() string {
-	return DiskCodeStrFromName(e.disk_name)
+	return DiskCodeFromName(e.disk_name)
 }
 
 func (e ErrorItem) ErrorRoot() string {
