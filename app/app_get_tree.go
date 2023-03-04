@@ -70,13 +70,13 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string) {
 	InitRootDir(disk_name, disk_path)
 
 	ReadTree(disk_name)
-	ReportMemCounts(disk_name, disk_path)
+	ReportDiskCounts(disk_name, disk_path)
 
 	db_path := GetDBPath(disk_name)
 	fmt.Printf("%s worker: write to db %s\n", disk_name, db_path)
 
 	WriteDB(disk_name)
-	ReportDBCounts(disk_name, disk_path)
+	ReportDBCounts(disk_name, db_path)
 
 	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
@@ -103,18 +103,16 @@ func WriteDB(disk_name string) {
 	InsertFiles(disk_name)
 }
 
-func ReportMemCounts(disk_name string, disk_path string) {
-	fmt.Printf("%s %s\t", disk_name, disk_path)
-	fmt.Printf("mem dirs: %d \t mem files: %d \n",
-		len(g_map_dirs[disk_name]), len(g_map_files[disk_name]))
+func ReportDiskCounts(disk_name string, disk_path string) {
+	fmt.Printf("%s: %d dirs, %d files in %s\n",
+		disk_name, len(g_map_dirs[disk_name]), len(g_map_files[disk_name]), disk_path)
 }
 
-func ReportDBCounts(disk_name string, disk_path string) {
+func ReportDBCounts(disk_name string, db_path string) {
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("%s %s\t", disk_name, disk_path)
-	fmt.Printf(" db dirs: %d \t  db files: %d \n",
-		DBQueryDirsCount(db), DBQueryFilesCount(db))
+	fmt.Printf("%s: %d dirs, %d files in %s\n",
+		disk_name, DBQueryDirsCount(db), DBQueryFilesCount(db), db_path)
 }
 
 func ReadDir(disk_name string, dir *Dir, path string) {
