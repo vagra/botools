@@ -272,7 +272,7 @@ func DBAddDir(db *sql.DB, dir *Dir) {
 		dir.id, dir.parent_id, dir.name, dir.path, dir.mod_time)
 }
 
-// tables
+// files
 
 func DBAddFile(db *sql.DB, file *File) {
 	DBExec(db, SQL_ADD_FILE,
@@ -352,6 +352,16 @@ func DBModFileDupID(db *sql.DB, id string, dup_id string) {
 
 func DBModFilesDiskID(db *sql.DB, src string, dst string) {
 	DBExec(db, SQL_REPLACE_FILES_ID, src, dst)
+}
+
+func DBBulkModFilesSha1(db *sql.DB, files *[]*File) {
+	DBBeginBulk(db)
+
+	for _, file := range *files {
+		DBModFileSha1OrStatus(db, file)
+	}
+
+	DBEndBulk(db)
 }
 
 // infos

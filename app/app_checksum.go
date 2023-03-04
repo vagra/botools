@@ -149,6 +149,8 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 	total := len(g_map_files[disk_name])
 	divisor := int(total / 20)
 
+	var files []*File = []*File{}
+
 	count := 0
 	for {
 		select {
@@ -159,15 +161,23 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 		case file := <-co:
 
 			if file == nil {
+				DBBulkModFilesSha1(db, &files)
+				files = nil
+
 				fmt.Printf("%s: outChan -> writer -> endChan: no more files.\n", disk_name)
 				ce <- true
 
 				continue
 			}
 
-			DBModFileSha1OrStatus(db, file)
+			files = append(files, file)
 
 			count++
+
+			if count%INSERT_COUNT == 0 {
+				DBBulkModFilesSha1(db, &files)
+				files = nil
+			}
 
 			if (divisor != 0 && count%divisor == 0) ||
 				divisor == 0 {
