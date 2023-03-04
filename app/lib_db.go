@@ -265,6 +265,20 @@ func DBGetVersion(db *sql.DB) int {
 
 //// insert into tables.
 
+// dirs
+
+func DBAddDir(db *sql.DB, dir *Dir) {
+	DBExec(db, SQL_ADD_DIR,
+		dir.id, dir.parent_id, dir.name, dir.path, dir.mod_time)
+}
+
+// tables
+
+func DBAddFile(db *sql.DB, file *File) {
+	DBExec(db, SQL_ADD_FILE,
+		file.id, file.parent_id, file.name, file.path, file.size, file.mod_time)
+}
+
 // infos
 
 func DBAddInfo(db *sql.DB, version int) {
@@ -347,6 +361,14 @@ func DBModVersion(db *sql.DB, version int) {
 }
 
 // // common
+
+func DBBeginBulk(db *sql.DB) {
+	DBExec(db, SQL_BEGIN)
+}
+
+func DBEndBulk(db *sql.DB) {
+	DBExec(db, SQL_END)
+}
 
 func DBExec(db *sql.DB, sql_name string, args ...interface{}) {
 	_, err := g_dot.Exec(db, sql_name, args...)

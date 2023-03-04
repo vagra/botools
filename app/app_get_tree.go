@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 func GetTree() error {
@@ -61,16 +62,23 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
 
 	disk_path := g_disks[disk_name]
-
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
+
+	start := time.Now()
 
 	InitMap(disk_name)
 	InitRootDir(disk_name, disk_path)
-	ReadTree(disk_name)
-	WriteDB(disk_name)
-	ReportCounts(disk_name, disk_path)
 
-	fmt.Printf("%s worker: stop.\n", disk_name)
+	ReadTree(disk_name)
+	ReportMemCounts(disk_name, disk_path)
+
+	db_path := GetDBPath(disk_name)
+	fmt.Printf("%s worker: write to db %s\n", disk_name, db_path)
+
+	WriteDB(disk_name)
+	ReportDBCounts(disk_name, disk_path)
+
+	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
 func InitRootDir(disk_name string, disk_path string) {
@@ -91,16 +99,20 @@ func ReadTree(disk_name string) {
 }
 
 func WriteDB(disk_name string) {
-	InsertDirs(disk_name, INSERT_COUNT)
-	InsertFiles(disk_name, INSERT_COUNT)
+	InsertDirs(disk_name)
+	InsertFiles(disk_name)
 }
 
-func ReportCounts(disk_name string, disk_path string) {
-	var db *sql.DB = g_dbs[disk_name]
-
-	fmt.Printf("%s %s\n", disk_name, disk_path)
+func ReportMemCounts(disk_name string, disk_path string) {
+	fmt.Printf("%s %s\t", disk_name, disk_path)
 	fmt.Printf("mem dirs: %d \t mem files: %d \n",
 		len(g_map_dirs[disk_name]), len(g_map_files[disk_name]))
+}
+
+func ReportDBCounts(disk_name string, disk_path string) {
+	var db *sql.DB = g_dbs[disk_name]
+
+	fmt.Printf("%s %s\t", disk_name, disk_path)
 	fmt.Printf(" db dirs: %d \t  db files: %d \n",
 		DBQueryDirsCount(db), DBQueryFilesCount(db))
 }
@@ -151,63 +163,61 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 	}
 }
 
-func InsertDirs(disk_name string, count int) {
+func InsertDirs(disk_name string) {
 
 	var db *sql.DB = g_dbs[disk_name]
-
-	var marks []string = []string{}
-	var args []interface{} = []interface{}{}
 
 	var m int = 0
 	var n int = 0
 
+	DBBeginBulk(db)
+
 	for _, dir := range g_map_dirs[disk_name] {
+
+		DBAddDir(db, dir)
+
 		m += 1
 		n += 1
 
-		dir.AddMarks(&marks)
-		dir.AddArgs(&args)
+		if m >= len(g_map_dirs[disk_name]) {
+			DBEndBulk(db)
+			break
+		}
 
-		if n >= count || m >= len(g_map_dirs[disk_name]) {
-
-			stmt := g_dot.QueryMap()[SQL_ADD_DIRS] + strings.Join(marks, ",\n")
-
-			_, err := db.Exec(stmt, args...)
-			Check(err, "在 dirs 表批量插入数据失败")
-
-			marks = []string{}
-			args = []interface{}{}
+		if n >= INSERT_COUNT {
 			n = 0
+
+			DBEndBulk(db)
+			DBBeginBulk(db)
 		}
 	}
 }
 
-func InsertFiles(disk_name string, count int) {
+func InsertFiles(disk_name string) {
 	var db *sql.DB = g_dbs[disk_name]
-
-	var marks []string = []string{}
-	var args []interface{} = []interface{}{}
 
 	var m int = 0
 	var n int = 0
 
-	for _, dir := range g_map_files[disk_name] {
+	DBBeginBulk(db)
+
+	for _, file := range g_map_files[disk_name] {
+
+		DBAddFile(db, file)
+
 		m += 1
 		n += 1
 
-		dir.AddMarks(&marks)
-		dir.AddArgs(&args)
+		if m >= len(g_map_files[disk_name]) {
+			DBEndBulk(db)
+			break
+		}
 
-		if n >= count || m >= len(g_map_files[disk_name]) {
-
-			stmt := g_dot.QueryMap()[SQL_ADD_FILES] + strings.Join(marks, ",\n")
-
-			_, err := db.Exec(stmt, args...)
-			Check(err, "在 files 表批量插入数据失败")
-
-			marks = []string{}
-			args = []interface{}{}
+		if n >= INSERT_COUNT {
 			n = 0
+
+			DBEndBulk(db)
+			DBBeginBulk(db)
 		}
 	}
 }

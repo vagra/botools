@@ -84,6 +84,11 @@ COMMIT;
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous = NORMAL;
 
+-- name: begin
+BEGIN
+
+-- name: end
+END
 
 -- name: check-table-exists
 SELECT name FROM sqlite_master WHERE type='table' AND name=?;
@@ -91,10 +96,10 @@ SELECT name FROM sqlite_master WHERE type='table' AND name=?;
 
 
 -- name: add-dir
-INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?);
+INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?, ?);
 
 -- name: add-file
-INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES(?, ?, ?, ?, ?);
+INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES(?, ?, ?, ?, ?, ?);
 
 -- name: add-info
 INSERT INTO infos (db_version) VALUES(?);
