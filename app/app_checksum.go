@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"sync"
@@ -78,31 +77,23 @@ func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string) {
 
 	inChan := make(chan *File, MAX_CHAN)
 	outChan := make(chan *File, MAX_CHAN)
-	endChan := make(chan bool)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	start := time.Now()
 
 	wg.Add(1)
-	go Writer(&wg, ctx, disk_name, outChan, endChan)
+	go SumWriter(&wg, disk_name, outChan)
 
 	for i := 0; i < g_threads; i++ {
 		wg.Add(1)
-		go Checker(&wg, ctx, disk_name, i, inChan, outChan)
+		go SumChecker(&wg, disk_name, i, inChan, outChan)
 	}
 
 	for _, file := range g_map_files[disk_name] {
 		inChan <- file
 	}
-	inChan <- nil
 
-	end := <-endChan
-	if end {
-		fmt.Printf("%s: endChan -> main: no more files.\n", disk_name)
-		fmt.Printf("%s: main -> ctx: everyone stop!\n", disk_name)
-		cancel()
+	for i := 0; i < g_threads; i++ {
+		inChan <- nil
 	}
 
 	wg.Wait()
@@ -110,23 +101,20 @@ func CheckSumWorker(main_wg *sync.WaitGroup, disk_name string) {
 	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
-func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, ci <-chan *File, co chan<- *File) {
+func SumChecker(wg *sync.WaitGroup, disk_name string, i int, ci <-chan *File, co chan<- *File) {
 	defer wg.Done()
 
 	for {
 		select {
-		case <-ctx.Done():
-			fmt.Printf("%s: checker %d stop.\n", disk_name, i)
-			return
 
 		case file := <-ci:
 
 			if file == nil {
-				fmt.Printf("%s: inChan -> checker %d -> outChan: no more files.\n", disk_name, i)
+				fmt.Printf("%s: checker %d stop.\n", disk_name, i)
 
 				co <- nil
 
-				continue
+				return
 			}
 
 			sha1, code := GetSHA1(file.path)
@@ -141,7 +129,7 @@ func Checker(wg *sync.WaitGroup, ctx context.Context, disk_name string, i int, c
 	}
 }
 
-func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan *File, ce chan<- bool) {
+func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 	defer wg.Done()
 
 	var db *sql.DB = g_dbs[disk_name]
@@ -151,29 +139,30 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 
 	var files []*File = []*File{}
 
+	stops := 0
 	count := 0
 	for {
 		select {
-		case <-ctx.Done():
-			fmt.Printf("%s: writer stop.\n", disk_name)
-			return
 
 		case file := <-co:
 
 			if file == nil {
+				stops++
+				if stops < g_threads {
+					continue
+				}
+
 				DBBulkModFilesSha1(db, &files)
 				files = nil
 
-				fmt.Printf("%s: outChan -> writer -> endChan: no more files.\n", disk_name)
-				ce <- true
+				fmt.Printf("%s: writer stop.\n", disk_name)
 
-				continue
+				return
 			}
 
 			files = append(files, file)
 
 			count++
-
 			if count%INSERT_COUNT == 0 {
 				DBBulkModFilesSha1(db, &files)
 				files = nil
