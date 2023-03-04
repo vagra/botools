@@ -34,6 +34,7 @@ const SQL_CREATE_VDIRS string = "create-vdirs-table"
 const SQL_CREATE_VFILES string = "create-vfiles-table"
 const SQL_CREATE_INFOS string = "create-infos-table"
 
+const SQL_INIT_PRAGMA string = "init-pragma"
 const SQL_CHECK_TABLE string = "check-table-exists"
 
 const SQL_ADD_DIR string = "add-dir"

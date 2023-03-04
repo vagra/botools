@@ -169,7 +169,8 @@ func Writer(wg *sync.WaitGroup, ctx context.Context, disk_name string, co <-chan
 
 			count++
 
-			if count%divisor == 0 {
+			if (divisor != 0 && count%divisor == 0) ||
+				divisor == 0 {
 				fmt.Printf("%s: %d%%\n", disk_name, count*100/total+1)
 			}
 

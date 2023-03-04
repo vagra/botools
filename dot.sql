@@ -80,6 +80,11 @@ COMMIT;
 
 
 
+-- name: init-pragma
+PRAGMA journal_mode = WAL;
+PRAGMA synchronous = NORMAL;
+
+
 -- name: check-table-exists
 SELECT name FROM sqlite_master WHERE type='table' AND name=?;
 
