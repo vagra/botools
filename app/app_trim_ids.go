@@ -33,10 +33,10 @@ func TrimIDs() error {
 	CheckTaskHasDBs()
 
 	println()
-	ConfirmTrimIDs()
+	ConfirmModDiskIDs()
 
 	println()
-	MTTrimIDs()
+	MTModDiskIDs()
 
 	println()
 	println("trim dir and file ids done!")
@@ -50,7 +50,7 @@ func MTTrimIDs() {
 
 	for name := range g_dbs {
 		wg.Add(1)
-		go TrimIDsWorker(&wg, name)
+		go ModDiskIDsWorker(&wg, name)
 	}
 
 	wg.Wait()

@@ -2,6 +2,7 @@ package app
 
 import (
 	"database/sql"
+	"regexp"
 )
 
 //// query the dbs.
@@ -169,6 +170,23 @@ func DBQueryDirIDFromPath(db *sql.DB, path string) string {
 	return id
 }
 
+func DBGetADirID(db *sql.DB) string {
+	var id string = ""
+
+	row := DBQueryRow(db, SQL_GET_A_DIR_ID)
+	DBScanRow(row, SQL_GET_A_DIR_ID, &id)
+
+	return id
+}
+
+func DBGetDirIDPrefix(db *sql.DB) string {
+	id := DBGetADirID(db)
+
+	prefix, _ := DBGetIDPrefix(id)
+
+	return prefix
+}
+
 // files
 
 func DBQueryFilesCount(db *sql.DB) int64 {
@@ -217,6 +235,23 @@ func DBQueryFileIDFromPath(db *sql.DB, path string) string {
 	return id
 }
 
+func DBGetAFileID(db *sql.DB) string {
+	var id string = ""
+
+	row := DBQueryRow(db, SQL_GET_A_FILE_ID)
+	DBScanRow(row, SQL_GET_A_FILE_ID, &id)
+
+	return id
+}
+
+func DBGetFileIDPrefix(db *sql.DB) string {
+	id := DBGetAFileID(db)
+
+	prefix, _ := DBGetIDPrefix(id)
+
+	return prefix
+}
+
 // infos
 
 func DBGetVersion(db *sql.DB) int {
@@ -254,6 +289,11 @@ func DBReplaceDirsPath(db *sql.DB, src string, dst string) {
 
 func DBModDirError(db *sql.DB, id string, code int) {
 	DBExec(db, SQL_MOD_DIR_ERROR, code, id)
+}
+
+func DBModDirsDiskID(db *sql.DB, src string, dst string) {
+	DBExec(db, SQL_REPLACE_DIRS_ID, src, dst)
+	DBExec(db, SQL_REPLACE_DIRS_PARENT_ID, src, dst)
 }
 
 // files
@@ -294,6 +334,11 @@ func DBModFileDupID(db *sql.DB, id string, dup_id string) {
 	DBExec(db, SQL_MOD_FILE_ERROR, dup_id, id)
 }
 
+func DBModFilesDiskID(db *sql.DB, src string, dst string) {
+	DBExec(db, SQL_REPLACE_FILES_ID, src, dst)
+	DBExec(db, SQL_REPLACE_FILES_PARENT_ID, src, dst)
+}
+
 // infos
 
 func DBModVersion(db *sql.DB, version int) {
@@ -329,4 +374,15 @@ func DBQueryRows(db *sql.DB, sql_name string, args ...interface{}) *sql.Rows {
 func DBScanRows(rows *sql.Rows, sql_name string, dest ...any) bool {
 	err := rows.Scan(dest...)
 	return err == nil
+}
+
+func DBGetIDPrefix(id string) (string, bool) {
+	regex := regexp.MustCompile(ID_REGEX)
+	matches := regex.FindStringSubmatch(id)
+
+	if len(matches) < 3 {
+		return "ERROR NO MATCHES", false
+	}
+
+	return matches[1], true
 }

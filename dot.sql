@@ -115,6 +115,9 @@ SELECT id, parent_id, name, path FROM dirs;
 -- name: get-dir-id-from-path
 SELECT id FROM dirs WHERE path = ? LIMIT 1;
 
+-- name: get-a-dir-id
+SELECT id FROM dirs LIMIT 1;
+
 
 -- name: get-files-count
 SELECT count(id) FROM files;
@@ -127,6 +130,9 @@ SELECT id, parent_id, name, path FROM files WHERE LENGTH(sha1) <= 0 AND status =
 
 -- name: get-file-id-from-path
 SELECT id FROM files WHERE path = ? LIMIT 1;
+
+-- name: get-a-file-id
+SELECT id FROM files LIMIT 1;
 
 
 -- name: get-db-version
@@ -143,15 +149,26 @@ UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_i
 -- name: replace-dirs-path
 UPDATE dirs SET path=REPLACE(path, ?, ?);
 
+-- name: replace-dirs-id
+UPDATE dirs SET id = REPLACE(id, ?, ?);
+
+-- name: replace-dirs-parent-id
+UPDATE dirs SET parent_id = REPLACE(parent_id, ?, ?);
+
 -- name: mod-dir-error
 UPDATE dirs SET error = ? WHERE id = ?;
-
 
 -- name: trim-files-id
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
 -- name: replace-files-path
 UPDATE files SET path=REPLACE(path, ?, ?);
+
+-- name: replace-files-id
+UPDATE files SET id = REPLACE(id, ?, ?);
+
+-- name: replace-files-parent-id
+UPDATE files SET parent_id = REPLACE(parent_id, ?, ?);
 
 -- name: mod-dir-files-error
 UPDATE files SET error = ? WHERE parent_id = ?;

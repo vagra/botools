@@ -17,7 +17,7 @@ func ReadErrors() {
 
 	g_errors = make(map[string][]*ErrorItem)
 
-	var regex = regexp.MustCompile(ERROR_REGEX)
+	regex := regexp.MustCompile(ERROR_REGEX)
 
 	scanner := bufio.NewScanner(file)
 	var count int = 0

@@ -341,3 +341,50 @@ func AllDBHasData() ([]string, bool) {
 
 	return paths, len(paths) <= 0
 }
+
+func GenDirUID(disk_name string) string {
+	prefix := GetDirPrefix(disk_name)
+	counter := GetDirsCounter(disk_name)
+	return GenUID(prefix, counter)
+}
+
+func GenFileUID(disk_name string) string {
+	prefix := GetFilePrefix(disk_name)
+	counter := GetFilesCounter(disk_name)
+	return GenUID(prefix, counter)
+}
+
+func GetDirUID(disk_name string, id int64) string {
+	prefix := GetDirPrefix(disk_name)
+	return GetUID(prefix, id)
+}
+
+func GetFileUID(disk_name string, id int64) string {
+	prefix := GetFilePrefix(disk_name)
+	return GetUID(prefix, id)
+}
+
+func GetDirPrefix(disk_name string) string {
+	return fmt.Sprintf("%s-%s", disk_name, DIR_PRE)
+}
+
+func GetFilePrefix(disk_name string) string {
+	return fmt.Sprintf("%s-%s", disk_name, FILE_PRE)
+}
+
+func GetDirsCounter(disk_name string) *int64 {
+	return g_dirs_counter[disk_name]
+}
+
+func GetFilesCounter(disk_name string) *int64 {
+	return g_files_counter[disk_name]
+}
+
+func GenUID(prefix string, counter *int64) string {
+	*counter += 1
+	return fmt.Sprintf("%s%08d", prefix, *counter)
+}
+
+func GetUID(prefix string, id int64) string {
+	return fmt.Sprintf("%s%08d", prefix, id)
+}

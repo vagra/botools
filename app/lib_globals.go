@@ -13,6 +13,8 @@ const CONFIG_INI = "config.ini"
 const ERRORS_TXT = "errors.txt"
 
 const DISK_PRE = "disk-"
+const DIR_PRE = "d-"
+const FILE_PRE = "f-"
 
 const DB_DIR string = "dbs"
 const DB_EXT string = ".db"
@@ -45,21 +47,27 @@ const SQL_GET_ROOT_DIR string = "get-root-dir"
 const SQL_COUNT_DIRS string = "get-dirs-count"
 const SQL_GET_ALL_DIRS string = "get-all-dirs"
 const SQL_PATH_GET_DIR_ID string = "get-dir-id-from-path"
+const SQL_GET_A_DIR_ID string = "get-a-dir-id"
 
 const SQL_COUNT_FILES string = "get-files-count"
 const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
 const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
 const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
+const SQL_GET_A_FILE_ID string = "get-a-file-id"
 
 const SQL_GET_VERSION string = "get-db-version"
 
 const SQL_MOD_ROOT_DIR string = "mod-root-dir"
 const SQL_TRIM_DIRS_ID string = "trim-dirs-id"
 const SQL_REPLACE_DIRS_PATH string = "replace-dirs-path"
+const SQL_REPLACE_DIRS_ID string = "replace-dirs-id"
+const SQL_REPLACE_DIRS_PARENT_ID string = "replace-dirs-parent-id"
 const SQL_MOD_DIR_ERROR string = "mod-dir-error"
 
 const SQL_TRIM_FILES_ID string = "trim-files-id"
 const SQL_REPLACE_FILES_PATH string = "replace-files-path"
+const SQL_REPLACE_FILES_ID string = "replace-files-id"
+const SQL_REPLACE_FILES_PARENT_ID string = "replace-files-parent-id"
 const SQL_MOD_DIR_FILES_ERROR string = "mod-dir-files-error"
 const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
 const SQL_MOD_FILE_STATUS string = "mod-file-status"
@@ -78,6 +86,7 @@ const MIGRATE string = "migrate-v"
 const MAX_CHAN int = 1000
 
 const ERROR_REGEX = `^(.*?)\((.*?)(\d+)\) : X:\\disks\\(\d+)\\(.*?)$`
+const ID_REGEX = `^(.*?)(\d{8})$`
 
 var g_disks map[string]string
 var g_dbs map[string]*sql.DB
@@ -123,7 +132,8 @@ BOTOOLS - bot.sanxuezang.com toolchain
       维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
 103)  move_errors: 复制异常文件和文件夹到指定目录
       维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹复制到 errors-root。
-
+104)  mod_disk_ids: 修改数据库中的 disk_id
+      维护功能，修改了 config.ini 和 dbs 的 disk_name 后，更新数据库中的 dirs 和 files 的 disk_id 。
 200)  migrate_db: 升级数据库
       [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
       [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）

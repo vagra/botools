@@ -75,7 +75,7 @@ func GetTreeWorker(wg *sync.WaitGroup, disk_name string) {
 
 func InitRootDir(disk_name string, disk_path string) {
 	var dir Dir
-	dir.id = GenUID(disk_name, g_dirs_counter[disk_name])
+	dir.id = GenDirUID(disk_name)
 	dir.parent_id = "0"
 	dir.name = disk_path
 	dir.path = disk_path
@@ -84,7 +84,7 @@ func InitRootDir(disk_name string, disk_path string) {
 }
 
 func ReadTree(disk_name string) {
-	root_id := GetUID(disk_name, 1)
+	root_id := GetDirUID(disk_name, 1)
 	root_dir := g_map_dirs[disk_name][root_id]
 
 	ReadDir(disk_name, root_dir, root_dir.name)
@@ -124,7 +124,7 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 		if item.IsDir() {
 
 			var sub Dir
-			sub.id = GenUID(disk_name, g_dirs_counter[disk_name])
+			sub.id = GenDirUID(disk_name)
 			sub.parent_id = dir.id
 			sub.name = item.Name()
 			sub.path = item_path
@@ -138,7 +138,7 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 		} else {
 
 			var file File
-			file.id = GenUID(disk_name, g_files_counter[disk_name])
+			file.id = GenFileUID(disk_name)
 			file.parent_id = dir.id
 			file.name = item.Name()
 			file.path = item_path
