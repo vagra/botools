@@ -104,15 +104,17 @@ func WriteDB(disk_name string) {
 }
 
 func ReportDiskCounts(disk_name string, disk_path string) {
-	fmt.Printf("%s: %d dirs, %d files in %s\n",
-		disk_name, len(g_map_dirs[disk_name]), len(g_map_files[disk_name]), disk_path)
+	fmt.Printf("%s %s\n%8d dirs, %8d files\n",
+		disk_name, disk_path,
+		len(g_map_dirs[disk_name]), len(g_map_files[disk_name]))
 }
 
 func ReportDBCounts(disk_name string, db_path string) {
 	var db *sql.DB = g_dbs[disk_name]
 
-	fmt.Printf("%s: %d dirs, %d files in %s\n",
-		disk_name, DBQueryDirsCount(db), DBQueryFilesCount(db), db_path)
+	fmt.Printf("%s %s\n%8d dirs, %8d files\n",
+		disk_name, db_path,
+		DBQueryDirsCount(db), DBQueryFilesCount(db))
 }
 
 func ReadDir(disk_name string, dir *Dir, path string) {
