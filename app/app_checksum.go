@@ -135,7 +135,6 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 	var db *sql.DB = g_dbs[disk_name]
 
 	total := len(g_map_files[disk_name])
-	divisor := int(total / 20)
 
 	var files []*File = []*File{}
 
@@ -152,6 +151,8 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 					continue
 				}
 
+				fmt.Printf("%s: %d/%d\n", disk_name, count, total)
+
 				DBBulkModFilesSha1(db, &files)
 				files = nil
 
@@ -164,13 +165,10 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 
 			count++
 			if count%INSERT_COUNT == 0 {
+				fmt.Printf("%s: %d/%d\n", disk_name, count, total)
+
 				DBBulkModFilesSha1(db, &files)
 				files = nil
-			}
-
-			if (divisor != 0 && count%divisor == 0) ||
-				divisor == 0 {
-				fmt.Printf("%s: %d%%\n", disk_name, count*100/total+1)
 			}
 
 		default:
