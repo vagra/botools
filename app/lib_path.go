@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -51,6 +52,13 @@ func PassFileExists(path string) bool {
 
 func PassCopyFile(src string, dst string) bool {
 	return CopyFile(src, dst)
+}
+
+func CheckCopyFile(src string, dst string) {
+	if !CopyFile(src, dst) {
+		fmt.Printf("复制文件失败\n")
+		WaitExit(1)
+	}
 }
 
 func CopyFile(src string, dst string) bool {

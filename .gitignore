@@ -2,9 +2,11 @@
 *.exe
 *.zip
 *.log
+*.old
 *.db-journal
 go.sum
 config.ini
 errors.txt
+version.txt
 db/
 vir/

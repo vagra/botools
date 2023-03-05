@@ -6,11 +6,23 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
+const VERSION = "v1.2.4"
+
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
+const VERSION_TXT = "version.txt"
+const EXAMPLE_INI = "config.ini.example"
 const CONFIG_INI = "config.ini"
 const ERRORS_TXT = "errors.txt"
+const DOT_SQL string = "dot.sql"
+const APP_EXE string = "botools.exe"
+
+const URL_BASE = "https://kepan.org/botools/"
+const URL_VERSION = URL_BASE + VERSION_TXT
+const URL_EXE = URL_BASE + APP_EXE
+const URL_SQL = URL_BASE + DOT_SQL
+const URL_INI = URL_BASE + EXAMPLE_INI
 
 const DISK_PRE = "disk-"
 const DIR_PRE = "d-"
@@ -25,8 +37,6 @@ const DISKS string = "disks"
 const FILES string = "files"
 const DIRS string = "dirs"
 const INFOS string = "infos"
-
-const DOT_SQL string = "dot.sql"
 
 const SQL_CREATE_DIRS string = "create-dirs-table"
 const SQL_CREATE_FILES string = "create-files-table"
@@ -110,8 +120,10 @@ var g_files_counter map[string]*int64
 
 var g_latest int
 
+var g_remote_version string
+
 const WELCOME string = `
-BOTOOLS - bot.sanxuezang.com toolchain
+BOTOOLS %s - bot.sanxuezang.com toolchain
 
 请输入数字并回车来启动对应的子程序：
 1)    init_db: 初始化数据库
@@ -129,6 +141,8 @@ BOTOOLS - bot.sanxuezang.com toolchain
 7)    sync_real2db: 从物理目录同步数据库
       检查物理目录的文件夹和文件，更新数据库中 dirs, files, vdirs, vfiles。
 
+100)  update_self: 更新 botools
+      自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 config.ini.example.
 101)  trim_ids: 截短 ID [已禁用]
       一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径
@@ -144,4 +158,5 @@ BOTOOLS - bot.sanxuezang.com toolchain
       [2023-03-03 v4] 为 dirs 和 files 添加 error, dup_id 以标记异常、重复，status 仅用于标记是否存在
 0)    exit: 退出程序
 
-请输入数字并回车来启动对应的子程序：`
+请输入数字并回车来启动对应的子程序：
+`

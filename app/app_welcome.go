@@ -7,7 +7,7 @@ import (
 )
 
 func Welcome() {
-	println(WELCOME)
+	fmt.Printf(WELCOME, VERSION)
 
 	var input string
 	var step int
@@ -61,6 +61,8 @@ func Run(step int) error {
 		err = SyncDB2VDB()
 	case 7:
 		err = SyncReal2DB()
+	case 100:
+		err = UpdateSelf()
 	// case 101:
 	// err = TrimIDs()
 	case 102:
