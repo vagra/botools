@@ -1,28 +1,24 @@
 package app
 
 import (
+	"botools/selfupdate"
 	"database/sql"
 
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "v1.2.4"
+const VERSION = "1.3.5"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
 
-const VERSION_TXT = "version.txt"
-const EXAMPLE_INI = "config.ini.example"
+const EXAMPLE_INI = "example.ini"
 const CONFIG_INI = "config.ini"
 const ERRORS_TXT = "errors.txt"
 const DOT_SQL string = "dot.sql"
 const APP_EXE string = "botools.exe"
 
 const URL_BASE = "https://kepan.org/botools/"
-const URL_VERSION = URL_BASE + VERSION_TXT
-const URL_EXE = URL_BASE + APP_EXE
-const URL_SQL = URL_BASE + DOT_SQL
-const URL_INI = URL_BASE + EXAMPLE_INI
 
 const DISK_PRE = "disk-"
 const DIR_PRE = "d-"
@@ -120,7 +116,7 @@ var g_files_counter map[string]*int64
 
 var g_latest int
 
-var g_remote_version string
+var g_updater *selfupdate.Updater
 
 const WELCOME string = `
 BOTOOLS %s - bot.sanxuezang.com toolchain
@@ -142,7 +138,7 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       检查物理目录的文件夹和文件，更新数据库中 dirs, files, vdirs, vfiles。
 
 100)  update_self: 更新 botools
-      自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 config.ini.example.
+      自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini 。
 101)  trim_ids: 截短 ID [已禁用]
       一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径

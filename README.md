@@ -19,4 +19,4 @@ $ go run botools
 ```
 
 # using
-copy `config.ini.example` as `config.ini`, edit this `ini` file, then start `botools.exe`.
+copy `example.ini` as `config.ini`, edit this `ini` file, then start `botools.exe`.

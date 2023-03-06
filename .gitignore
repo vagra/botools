@@ -8,5 +8,6 @@ go.sum
 config.ini
 errors.txt
 version.txt
-db/
-vir/
+/db/
+/vir/
+/public/
