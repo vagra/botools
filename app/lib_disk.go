@@ -13,7 +13,8 @@ func CheckHasDisksConfig() {
 		println("disk-name = disk:/path/")
 		println("disk-name = disk:/path/")
 		println("disk-name 必须以 'disk-' 开头，后跟若干位英文字母或数字")
-		println("disk-path 必须是以盘符开头的绝对路径，并且要使用正斜杠 /")
+		println("disk-path 必须使用绝对路径，使用正斜杠 / 并且以正斜杠结尾")
+		println("disk-path linux 上的格式为 /disk/path ")
 		WaitExit(1)
 	}
 }
@@ -28,7 +29,7 @@ func CheckDiskNameValid(name string) {
 
 func CheckDiskPathValid(path string) {
 	if !DiskPathValid(path) {
-		println("disk-path 必须是以盘符开头的绝对路径，并且要使用正斜杠 /")
+		println("disk-path 必须使用绝对路径，使用正斜杠 / 并且以正斜杠结尾")
 		fmt.Printf("请检查 %s\n", CONFIG_INI)
 		WaitExit(1)
 	}
@@ -55,8 +56,13 @@ func DiskPathValid(path string) bool {
 		return false
 	}
 
+	if strings.Contains(path, ":") &&
+		strings.HasPrefix(path, "/") {
+		return false
+	}
+
 	if !strings.Contains(path, ":") &&
-		!strings.HasPrefix(path, "/") {
+		!strings.HasSuffix(path, "/") {
 		return false
 	}
 
