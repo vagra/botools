@@ -55,7 +55,8 @@ func DiskPathValid(path string) bool {
 		return false
 	}
 
-	if !strings.Contains(path, ":") {
+	if !strings.Contains(path, ":") &&
+		!strings.HasPrefix(path, "/") {
 		return false
 	}
 

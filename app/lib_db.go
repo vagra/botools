@@ -298,7 +298,7 @@ func DBTrimDirsID(db *sql.DB) {
 }
 
 func DBReplaceDirsPath(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_DIRS_PATH, src, dst)
+	DBExec(db, SQL_REPLACE_DIRS_PATH, dst, src)
 }
 
 func DBModDirError(db *sql.DB, id string, code int) {
@@ -327,7 +327,7 @@ func DBTrimFilesID(db *sql.DB) {
 }
 
 func DBReplaceFilesPath(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_FILES_PATH, src, dst)
+	DBExec(db, SQL_REPLACE_FILES_PATH, dst, src)
 }
 
 func DBModDirFilesError(db *sql.DB, id string, code int8) {

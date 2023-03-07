@@ -157,7 +157,7 @@ UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
 UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
 -- name: replace-dirs-path
-UPDATE dirs SET path=REPLACE(path, ?, ?);
+UPDATE dirs SET path = ( ? || substr(path, length(?)+1) );
 
 -- name: replace-dirs-id
 UPDATE dirs SET id = REPLACE(id, ?, ?);
@@ -172,7 +172,7 @@ UPDATE dirs SET error = ? WHERE id = ?;
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
 -- name: replace-files-path
-UPDATE files SET path=REPLACE(path, ?, ?);
+UPDATE files SET path = ( ? || substr(path, length(?)+1) );
 
 -- name: replace-files-id
 UPDATE files SET id = REPLACE(id, ?, ?);
