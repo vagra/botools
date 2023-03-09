@@ -58,9 +58,11 @@ func Run(step int) error {
 	case 5:
 		err = VirTree()
 	case 6:
-		err = SyncDB2VDB()
-	case 7:
 		err = SyncReal2DB()
+	case 7:
+		err = SyncDB2VDB()
+	case 8:
+		err = SyncVDB2Vir()
 	case 100:
 		err = UpdateSelf()
 	// case 101:

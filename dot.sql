@@ -120,7 +120,7 @@ SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
 SELECT count(id) FROM dirs;
 
 -- name: get-all-dirs
-SELECT id, parent_id, name, path FROM dirs;
+SELECT id, parent_id, name, path, status, error FROM dirs;
 
 -- name: get-dir-id-from-path
 SELECT id FROM dirs WHERE path = ? LIMIT 1;
@@ -131,6 +131,9 @@ SELECT id FROM dirs LIMIT 1;
 
 -- name: get-files-count
 SELECT count(id) FROM files;
+
+-- name: get-all-files
+SELECT id, parent_id, name, path, status, error FROM files;
 
 -- name: get-no-sha1-files-count
 SELECT count(id) FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;

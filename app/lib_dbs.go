@@ -1,9 +1,12 @@
 package app
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func CheckDBsDirExists() {
@@ -340,6 +343,52 @@ func AllDBHasData() ([]string, bool) {
 	}
 
 	return paths, len(paths) <= 0
+}
+
+func BackupDB(dst *sql.DB, src *sql.DB) error {
+	dst_conn, err := dst.Conn(context.Background())
+	if err != nil {
+		return err
+	}
+
+	src_conn, err := src.Conn(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return dst_conn.Raw(func(dst_conn interface{}) error {
+		return src_conn.Raw(func(src_conn interface{}) error {
+			dst_lite_conn, ok := dst_conn.(*sqlite3.SQLiteConn)
+			if !ok {
+				return fmt.Errorf("can't convert destination connection to SQLiteConn")
+			}
+
+			src_lite_conn, ok := src_conn.(*sqlite3.SQLiteConn)
+			if !ok {
+				return fmt.Errorf("can't convert source connection to SQLiteConn")
+			}
+
+			b, err := dst_lite_conn.Backup("main", src_lite_conn, "main")
+			if err != nil {
+				return fmt.Errorf("error initializing SQLite backup: %w", err)
+			}
+
+			done, err := b.Step(-1)
+			if !done {
+				return fmt.Errorf("step of -1, but not done")
+			}
+			if err != nil {
+				return fmt.Errorf("error in stepping backup: %w", err)
+			}
+
+			err = b.Finish()
+			if err != nil {
+				return fmt.Errorf("error finishing backup: %w", err)
+			}
+
+			return err
+		})
+	})
 }
 
 func GenDirUID(disk_name string) string {

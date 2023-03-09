@@ -153,7 +153,7 @@ func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 		var dir Dir
 
 		DBScanRows(rows, SQL_GET_ALL_DIRS,
-			&dir.id, &dir.parent_id, &dir.name, &dir.path)
+			&dir.id, &dir.parent_id, &dir.name, &dir.path, &dir.status, &dir.error)
 
 		dirs[dir.id] = &dir
 	}
@@ -196,6 +196,25 @@ func DBQueryFilesCount(db *sql.DB) int64 {
 	DBScanRow(row, SQL_COUNT_FILES, &count)
 
 	return count
+}
+
+func DBGetAllFiles(db *sql.DB) map[string]*File {
+
+	var files map[string]*File = make(map[string]*File)
+
+	rows := DBQueryRows(db, SQL_GET_ALL_FILES)
+	defer rows.Close()
+
+	for rows.Next() {
+		var file File
+
+		DBScanRows(rows, SQL_GET_ALL_FILES,
+			&file.id, &file.parent_id, &file.name, &file.path, &file.status, &file.error)
+
+		files[file.id] = &file
+	}
+
+	return files
 }
 
 func DBQueryNoSHA1FilesCount(db *sql.DB) int64 {

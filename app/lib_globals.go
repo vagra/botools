@@ -7,7 +7,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.3.6"
+const VERSION = "1.4.0"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -59,6 +59,7 @@ const SQL_PATH_GET_DIR_ID string = "get-dir-id-from-path"
 const SQL_GET_A_DIR_ID string = "get-a-dir-id"
 
 const SQL_COUNT_FILES string = "get-files-count"
+const SQL_GET_ALL_FILES string = "get-all-files"
 const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
 const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
 const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
@@ -88,6 +89,8 @@ const GET_TREE_LOG string = "get_tree.log"
 const VIR_TREE_LOG string = "vir_tree.log"
 const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
+const DB2VDB_LOG string = "db2vdb.log"
+const VDB2VIR_LOG string = "vdb2vir.log"
 const MOVE_ERRORS_LOG string = "move_errors.log"
 
 const MIGRATE string = "migrate-v"
@@ -132,10 +135,12 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       基于现有数据库，获取每一个文件的 SHA1 校验和。
 5)    vir_tree: 生成虚拟目录树
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
-6)    sync_db2vdb: 从数据库同步到虚拟数据库
+6)    sync_real2db: 从物理目录同步数据库
+      检查物理目录的文件夹和文件，更新数据库中的 dirs, files。
+7)    sync_db2vdb: 从数据库同步到虚拟数据库
       把数据库中的 dirs 和 files 同步到 vdirs 和 vfiles。
-7)    sync_real2db: 从物理目录同步数据库
-      检查物理目录的文件夹和文件，更新数据库中 dirs, files, vdirs, vfiles。
+8)    sync_vdb2vir: 从虚拟数据库同步到虚拟目录树
+      根据数据库中的 vdirs 和 vfiles 同步虚拟目录树。
 
 100)  update_self: 更新 botools
       自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini 。
