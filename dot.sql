@@ -119,6 +119,9 @@ SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
 -- name: get-dirs-count
 SELECT count(id) FROM dirs;
 
+-- name: get-max-dir-id
+SELECT MAX(id) FROM dirs;
+
 -- name: get-all-dirs
 SELECT id, parent_id, name, path, status, error FROM dirs;
 
@@ -131,6 +134,9 @@ SELECT id FROM dirs LIMIT 1;
 
 -- name: get-files-count
 SELECT count(id) FROM files;
+
+-- name: get-max-file-id
+SELECT MAX(id) FROM files;
 
 -- name: get-all-files
 SELECT id, parent_id, name, path, status, error FROM files;

@@ -24,6 +24,10 @@ func GetDBPath(disk_name string) string {
 	return fmt.Sprintf("%s/%s%s", DB_DIR, disk_name, DB_EXT)
 }
 
+func GetMemDBPath(disk_name string) string {
+	return fmt.Sprintf("file:%s?mode=memory&cache=shared", disk_name)
+}
+
 func CheckTaskHasDBs() {
 	if len(g_dbs) > 0 {
 		return
@@ -297,6 +301,19 @@ func CheckAllDBHasData() {
 	}
 }
 
+func CheckAllDBRootPathCorrect() {
+	fmt.Printf("检查是否所有数据库中的根路径都与 %s 中的一致\n", CONFIG_INI)
+
+	if paths, yes := AllDBRootPathCorrect(); !yes {
+		fmt.Printf("检查到如下数据库中的根路径与 %s 中的不一致：\n", CONFIG_INI)
+		for db_path, root_path := range paths {
+			fmt.Printf("%s\t%s\n", db_path, root_path)
+		}
+		fmt.Printf("请检查 %s 和以上数据库\n", CONFIG_INI)
+		WaitExit(1)
+	}
+}
+
 func AllDBExists() ([]string, bool) {
 	var paths []string = []string{}
 
@@ -339,6 +356,24 @@ func AllDBHasData() ([]string, bool) {
 		if tables, yes := DBHasData(db); !yes {
 			info := fmt.Sprintf("%s\t%s", db_path, tables)
 			paths = append(paths, info)
+		}
+	}
+
+	return paths, len(paths) <= 0
+}
+
+func AllDBRootPathCorrect() (map[string]string, bool) {
+	var paths map[string]string = make(map[string]string)
+
+	for disk_name, disk_path := range g_disks {
+		db_path := GetDBPath(disk_name)
+
+		db := DBOpen(db_path)
+
+		dir := DBGetRootDir(db)
+
+		if dir.path != disk_path {
+			paths[db_path] = dir.path
 		}
 	}
 

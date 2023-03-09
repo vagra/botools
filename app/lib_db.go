@@ -142,6 +142,17 @@ func DBQueryDirsCount(db *sql.DB) int64 {
 	return count
 }
 
+func DBQueryMaxDirID(db *sql.DB) int64 {
+	var id string = ""
+
+	row := DBQueryRow(db, SQL_MAX_DIR_ID)
+	DBScanRow(row, SQL_MAX_DIR_ID, &id)
+
+	index, _ := DBGetIDIndex(id)
+
+	return index
+}
+
 func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 
 	var dirs map[string]*Dir = make(map[string]*Dir)
@@ -196,6 +207,17 @@ func DBQueryFilesCount(db *sql.DB) int64 {
 	DBScanRow(row, SQL_COUNT_FILES, &count)
 
 	return count
+}
+
+func DBQueryMaxFileIndex(db *sql.DB) int64 {
+	var id string = ""
+
+	row := DBQueryRow(db, SQL_MAX_FILE_ID)
+	DBScanRow(row, SQL_MAX_FILE_ID, &id)
+
+	index, _ := DBGetIDIndex(id)
+
+	return index
 }
 
 func DBGetAllFiles(db *sql.DB) map[string]*File {
@@ -437,4 +459,24 @@ func DBGetIDPrefix(id string) (string, bool) {
 	}
 
 	return matches[1], true
+}
+
+func DBGetIDSuffix(id string) (string, bool) {
+	regex := regexp.MustCompile(ID_REGEX)
+	matches := regex.FindStringSubmatch(id)
+
+	if len(matches) < 3 {
+		return "ERROR NO MATCHES", false
+	}
+
+	return matches[2], true
+}
+
+func DBGetIDIndex(id string) (int64, bool) {
+	code, ok := DBGetIDSuffix(id)
+	if !ok {
+		return 0, false
+	}
+
+	return Str2Int64(code), true
 }

@@ -52,6 +52,19 @@ func Num2Str(num int) string {
 	return fmt.Sprintf("%d", num)
 }
 
+func Str2Int64(str string) int64 {
+	num, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return num
+}
+
+func Int642Str(num int64) string {
+	return fmt.Sprintf("%d", num)
+}
+
 func CleanPath(path string) string {
 	path = strings.Replace(path, "\\", "/", -1)
 	path = strings.Replace(path, "//", "/", -1)

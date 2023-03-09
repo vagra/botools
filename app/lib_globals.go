@@ -54,11 +54,13 @@ const SQL_ADD_FILES string = "add-files"
 
 const SQL_GET_ROOT_DIR string = "get-root-dir"
 const SQL_COUNT_DIRS string = "get-dirs-count"
+const SQL_MAX_DIR_ID string = "get-max-dir-id"
 const SQL_GET_ALL_DIRS string = "get-all-dirs"
 const SQL_PATH_GET_DIR_ID string = "get-dir-id-from-path"
 const SQL_GET_A_DIR_ID string = "get-a-dir-id"
 
 const SQL_COUNT_FILES string = "get-files-count"
+const SQL_MAX_FILE_ID string = "get-max-file-id"
 const SQL_GET_ALL_FILES string = "get-all-files"
 const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
 const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
