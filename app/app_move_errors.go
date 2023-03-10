@@ -36,6 +36,9 @@ func MoveErrors() error {
 	CheckAllDBHasData()
 
 	println()
+	CheckAllDBRootPathCorrect()
+
+	println()
 	GetHasErrorDBs()
 
 	CheckTaskHasDBs()

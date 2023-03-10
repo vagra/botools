@@ -27,6 +27,9 @@ func TrimIDs() error {
 	CheckAllDBHasData()
 
 	println()
+	CheckAllDBRootPathCorrect()
+
+	println()
 	GetHasDataDBs()
 
 	CheckTaskHasDBs()

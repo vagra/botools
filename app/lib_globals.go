@@ -118,6 +118,11 @@ var g_map_files map[string]map[string]*File
 var g_dirs_counter map[string]*int64
 var g_files_counter map[string]*int64
 
+var g_mod_dir_ids map[string]map[string]string
+var g_add_dir_ids map[string]map[string]string
+var g_mod_file_ids map[string]map[string]string
+var g_add_file_ids map[string]map[string]string
+
 var g_latest int
 
 var g_updater *selfupdate.Updater

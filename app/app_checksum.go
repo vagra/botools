@@ -31,6 +31,9 @@ func CheckSum() error {
 	CheckAllDBHasData()
 
 	println()
+	CheckAllDBRootPathCorrect()
+
+	println()
 	GetNeedCheckSumDBs()
 
 	CheckTaskHasDBs()

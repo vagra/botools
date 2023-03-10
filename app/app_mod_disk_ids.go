@@ -24,6 +24,9 @@ func ModDiskIDs() error {
 	CheckAllDBInited()
 
 	println()
+	CheckAllDBRootPathCorrect()
+
+	println()
 	CheckAllDBHasData()
 
 	println()
