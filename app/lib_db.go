@@ -22,6 +22,12 @@ func DBOpen(db_path string) *DB {
 	return (*DB)(db)
 }
 
+func (db *DB) Close() error {
+	err := (*sql.DB)(db).Close()
+
+	return err
+}
+
 func (db *DB) Inited() ([]string, bool) {
 	var tables []string = []string{}
 

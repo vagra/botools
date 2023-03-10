@@ -34,6 +34,9 @@ func SyncReal2DB() error {
 	CheckAllDBRootPathCorrect()
 
 	println()
+	CheckBackupAllDBs()
+
+	println()
 	GetHasDataDBs()
 
 	CheckTaskHasDBs()
@@ -81,10 +84,10 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	dst_db := DBOpen(dst_path)
 
-	err := BackupDB(mem_db, src_db)
+	err := BakeDB(mem_db, src_db)
 	Check(err, "error when read db %s to memory", src_path)
 
-	err = BackupDB(dst_db, mem_db)
+	err = BakeDB(dst_db, mem_db)
 	Check(err, "error when backup memory db to %s", dst_path)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
