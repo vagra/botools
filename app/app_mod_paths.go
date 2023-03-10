@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"sync"
 )
@@ -59,13 +58,13 @@ func MTModPaths() {
 func ModPathsWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start replace paths in db %s\n", disk_name, db_path)
 
-	root_dir := DBGetRootDir(db)
+	root_dir := db.GetRootDir()
 
 	old_root := root_dir.path
 	new_root := g_disks[disk_name]
@@ -80,10 +79,10 @@ func ModPathsWorker(wg *sync.WaitGroup, disk_name string) {
 	fmt.Printf("%s worker: old path %s\n", disk_name, old_root)
 	fmt.Printf("%s worker: new path %s\n", disk_name, new_root)
 
-	DBModRootDir(db, new_root)
+	db.ModRootDir(new_root)
 
-	DBReplaceDirsPath(db, old_root, new_root)
-	DBReplaceFilesPath(db, old_root, new_root)
+	db.ReplaceDirsPath(old_root, new_root)
+	db.ReplaceFilesPath(old_root, new_root)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }

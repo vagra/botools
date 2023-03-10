@@ -38,7 +38,7 @@ func CheckTaskHasDBs() {
 }
 
 func GetAllDBs() {
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -57,7 +57,7 @@ func GetAllDBs() {
 func GetNotExistsDBs() {
 	println("检查还不存在的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -79,7 +79,7 @@ func GetNotExistsDBs() {
 func GetNotInitedDBs() {
 	println("检查不存在或没有初始化的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -89,7 +89,7 @@ func GetNotInitedDBs() {
 
 		db := DBOpen(db_path)
 
-		if _, yes := DBInited(db); yes {
+		if _, yes := db.Inited(); yes {
 			continue
 		}
 
@@ -106,7 +106,7 @@ func GetNotInitedDBs() {
 func GetEmptyDBs() {
 	println("获取所有 dirs 和 files 表为空的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -118,7 +118,7 @@ func GetEmptyDBs() {
 
 		CheckDBInited(db, db_path)
 
-		if _, yes := DBNoData(db); !yes {
+		if _, yes := db.NoData(); !yes {
 			continue
 		}
 		println(db_path)
@@ -130,7 +130,7 @@ func GetEmptyDBs() {
 func GetInitedDBs() {
 	println("获取所有已经初始化的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -151,7 +151,7 @@ func GetInitedDBs() {
 func GetHasDataDBs() {
 	println("获取所有 dirs 和 files 表都有数据的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -174,7 +174,7 @@ func GetHasDataDBs() {
 func GetNeedCheckSumDBs() {
 	println("获取还有 files 没有 sha1 的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_disks {
 
@@ -188,7 +188,7 @@ func GetNeedCheckSumDBs() {
 
 		CheckDBHasData(db, db_path)
 
-		if _, yes := DBNeedCheckSum(db); !yes {
+		if _, yes := db.NeedCheckSum(); !yes {
 			continue
 		}
 
@@ -201,7 +201,7 @@ func GetNeedCheckSumDBs() {
 func GetHasErrorDBs() {
 	println("获取所有存在异常文件和文件夹的数据库")
 
-	g_dbs = make(map[string]*sql.DB)
+	g_dbs = make(map[string]*DB)
 
 	for disk_name := range g_errors {
 
@@ -230,8 +230,8 @@ func CheckDBExists(db_name string) {
 	}
 }
 
-func CheckDBInited(db *sql.DB, db_path string) {
-	if tables, yes := DBInited(db); !yes {
+func CheckDBInited(db *DB, db_path string) {
+	if tables, yes := db.Inited(); !yes {
 		fmt.Printf("数据库 %s 缺少如下表：\n", db_path)
 		for _, table := range tables {
 			println(table)
@@ -241,8 +241,8 @@ func CheckDBInited(db *sql.DB, db_path string) {
 	}
 }
 
-func CheckDBHasData(db *sql.DB, db_path string) {
-	if tables, yes := DBHasData(db); !yes {
+func CheckDBHasData(db *DB, db_path string) {
+	if tables, yes := db.HasData(); !yes {
 		fmt.Printf("数据库 %s 的如下表还没有数据\n", db_path)
 		for _, table := range tables {
 			println(table)
@@ -252,8 +252,8 @@ func CheckDBHasData(db *sql.DB, db_path string) {
 	}
 }
 
-func CheckDBNoData(db *sql.DB, db_path string) {
-	if tables, yes := DBNoData(db); !yes {
+func CheckDBNoData(db *DB, db_path string) {
+	if tables, yes := db.NoData(); !yes {
 		fmt.Printf("数据库 %s 的如下表存在数据\n", db_path)
 		for _, table := range tables {
 			println(table)
@@ -336,7 +336,7 @@ func AllDBInited() ([]string, bool) {
 
 		db := DBOpen(db_path)
 
-		if tables, yes := DBInited(db); !yes {
+		if tables, yes := db.Inited(); !yes {
 			info := fmt.Sprintf("%s\t%s", db_path, tables)
 			paths = append(paths, info)
 		}
@@ -353,7 +353,7 @@ func AllDBHasData() ([]string, bool) {
 
 		db := DBOpen(db_path)
 
-		if tables, yes := DBHasData(db); !yes {
+		if tables, yes := db.HasData(); !yes {
 			info := fmt.Sprintf("%s\t%s", db_path, tables)
 			paths = append(paths, info)
 		}
@@ -370,7 +370,7 @@ func AllDBRootPathCorrect() (map[string]string, bool) {
 
 		db := DBOpen(db_path)
 
-		dir := DBGetRootDir(db)
+		dir := db.GetRootDir()
 
 		if dir.path != disk_path {
 			paths[db_path] = dir.path
@@ -380,13 +380,13 @@ func AllDBRootPathCorrect() (map[string]string, bool) {
 	return paths, len(paths) <= 0
 }
 
-func BackupDB(dst *sql.DB, src *sql.DB) error {
-	dst_conn, err := dst.Conn(context.Background())
+func BackupDB(dst *DB, src *DB) error {
+	dst_conn, err := (*sql.DB)(dst).Conn(context.Background())
 	if err != nil {
 		return err
 	}
 
-	src_conn, err := src.Conn(context.Background())
+	src_conn, err := (*sql.DB)(src).Conn(context.Background())
 	if err != nil {
 		return err
 	}

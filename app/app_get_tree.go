@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -110,11 +109,11 @@ func ReportDiskCounts(disk_name string, disk_path string) {
 }
 
 func ReportDBCounts(disk_name string, db_path string) {
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	fmt.Printf("%s %s\n%8d dirs, %8d files\n",
 		disk_name, db_path,
-		DBQueryDirsCount(db), DBQueryFilesCount(db))
+		db.QueryDirsCount(), db.QueryFilesCount())
 }
 
 func ReadDir(disk_name string, dir *Dir, path string) {
@@ -165,59 +164,59 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 
 func InsertDirs(disk_name string) {
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	var m int = 0
 	var n int = 0
 
-	DBBeginBulk(db)
+	db.BeginBulk()
 
 	for _, dir := range g_map_dirs[disk_name] {
 
-		DBAddDir(db, dir)
+		db.AddDir(dir)
 
 		m += 1
 		n += 1
 
 		if m >= len(g_map_dirs[disk_name]) {
-			DBEndBulk(db)
+			db.EndBulk()
 			break
 		}
 
 		if n >= INSERT_COUNT {
 			n = 0
 
-			DBEndBulk(db)
-			DBBeginBulk(db)
+			db.EndBulk()
+			db.BeginBulk()
 		}
 	}
 }
 
 func InsertFiles(disk_name string) {
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	var m int = 0
 	var n int = 0
 
-	DBBeginBulk(db)
+	db.BeginBulk()
 
 	for _, file := range g_map_files[disk_name] {
 
-		DBAddFile(db, file)
+		db.AddFile(file)
 
 		m += 1
 		n += 1
 
 		if m >= len(g_map_files[disk_name]) {
-			DBEndBulk(db)
+			db.EndBulk()
 			break
 		}
 
 		if n >= INSERT_COUNT {
 			n = 0
 
-			DBEndBulk(db)
-			DBBeginBulk(db)
+			db.EndBulk()
+			db.BeginBulk()
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"sync"
@@ -78,13 +77,11 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	src_db := g_dbs[disk_name]
 
-	mem_db, err := sql.Open("sqlite3", mem_path)
-	Check(err, "open memory db %s failed", mem_path)
+	mem_db := DBOpen(mem_path)
 
-	dst_db, err := sql.Open("sqlite3", dst_path)
-	Check(err, "open new db %s failed", dst_path)
+	dst_db := DBOpen(dst_path)
 
-	err = BackupDB(mem_db, src_db)
+	err := BackupDB(mem_db, src_db)
 	Check(err, "error when read db %s to memory", src_path)
 
 	err = BackupDB(dst_db, mem_db)

@@ -53,17 +53,17 @@ func STMigrateDB() {
 
 func MigrateDBWorker(disk_name string) {
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start migrate db %s\n", disk_name, db_path)
 
-	if !DBInfosTableExists(db) {
-		DBCreateInfosTable(db)
+	if !db.InfosTableExists() {
+		db.CreateInfosTable()
 	}
 
-	old_ver := DBGetVersion(db)
+	old_ver := db.GetVersion()
 	fmt.Printf("数据库当前版本 v%d\n", old_ver)
 
 	new_ver := old_ver
@@ -78,7 +78,7 @@ func MigrateDBWorker(disk_name string) {
 		sql_name := DotVersionSQL(new_ver)
 		fmt.Printf("执行数据库升级命令 %s\n", sql_name)
 
-		_, err := g_dot.Exec(db, sql_name)
+		_, err := g_dot.Exec((*sql.DB)(db), sql_name)
 		Check(err, "执行数据库升级命令 %s 时失败", sql_name)
 	}
 

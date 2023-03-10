@@ -2,7 +2,6 @@ package app
 
 import (
 	"botools/selfupdate"
-	"database/sql"
 
 	"github.com/qustavo/dotsql"
 )
@@ -103,7 +102,7 @@ const ERROR_REGEX = `^(.*?)\((.*?)(\d+)\) : X:\\disks\\(\d+)\\(.*?)$`
 const ID_REGEX = `^(.*?)(\d{8})$`
 
 var g_disks map[string]string
-var g_dbs map[string]*sql.DB
+var g_dbs map[string]*DB
 var g_dot *dotsql.DotSql
 var g_vdisks map[string]string
 

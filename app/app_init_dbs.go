@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 )
 
@@ -41,10 +40,10 @@ func STInitDBs() {
 	}
 }
 
-func InitDBWorker(db *sql.DB) {
-	DBCreateDirsTable(db)
-	DBCreateFilesTable(db)
-	DBCreateVDirsTable(db)
-	DBCreateVFilesTable(db)
-	DBCreateInfosTable(db)
+func InitDBWorker(db *DB) {
+	db.CreateDirsTable()
+	db.CreateFilesTable()
+	db.CreateVDirsTable()
+	db.CreateVFilesTable()
+	db.CreateInfosTable()
 }

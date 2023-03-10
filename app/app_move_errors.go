@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 )
@@ -114,9 +113,9 @@ func MoveDBErrors(disk_name string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func MoveDBErrorDir(db_path string, db *sql.DB, item *ErrorItem) {
+func MoveDBErrorDir(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
-	id := DBQueryDirIDFromPath(db, path)
+	id := db.QueryDirIDFromPath(path)
 
 	if len(id) <= 0 {
 		fmt.Printf("%s no dir %s\n", db_path, path)
@@ -126,13 +125,13 @@ func MoveDBErrorDir(db_path string, db *sql.DB, item *ErrorItem) {
 
 	fmt.Printf("%s   dir\n", id)
 
-	DBModDirError(db, id, 1)
-	DBModDirFilesError(db, id, 1)
+	db.ModDirError(id, 1)
+	db.ModDirFilesError(id, 1)
 }
 
-func MoveDBErrorFile(db_path string, db *sql.DB, item *ErrorItem) {
+func MoveDBErrorFile(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
-	id := DBQueryFileIDFromPath(db, path)
+	id := db.QueryFileIDFromPath(path)
 
 	if len(id) <= 0 {
 		fmt.Printf("%s no file %s\n", db_path, path)
@@ -142,7 +141,7 @@ func MoveDBErrorFile(db_path string, db *sql.DB, item *ErrorItem) {
 
 	fmt.Printf("%s  file\n", id)
 
-	DBModFileError(db, id, 1)
+	db.ModFileError(id, 1)
 }
 
 func ConfirmMoveErrors() {

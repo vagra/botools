@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"sync"
 )
@@ -59,14 +58,14 @@ func MTTrimIDs() {
 func TrimIDsWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start trim ids %s\n", disk_name, db_path)
 
-	DBTrimDirsID(db)
-	DBTrimFilesID(db)
+	db.TrimDirsID()
+	db.TrimFilesID()
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }

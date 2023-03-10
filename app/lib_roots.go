@@ -9,7 +9,7 @@ type Roots struct {
 	virs_root   string
 }
 
-func (r Roots) Tuple() string {
+func (r *Roots) Tuple() string {
 	return fmt.Sprintln("[roots]") +
 		fmt.Sprintf("disks-root = %s\n", r.disks_root) +
 		fmt.Sprintf("errors-root = %s\n", r.errors_root) +

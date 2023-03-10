@@ -5,6 +5,8 @@ import (
 	"regexp"
 )
 
+type DB sql.DB
+
 //// query the dbs.
 
 func DBExists(db_name string) bool {
@@ -13,51 +15,51 @@ func DBExists(db_name string) bool {
 	return FileExists(db_path)
 }
 
-func DBOpen(db_path string) *sql.DB {
+func DBOpen(db_path string) *DB {
 	db, err := sql.Open("sqlite3", db_path)
 	Check(err, "open db %s failed", db_path)
 
-	return db
+	return (*DB)(db)
 }
 
-func DBInited(db *sql.DB) ([]string, bool) {
+func (db *DB) Inited() ([]string, bool) {
 	var tables []string = []string{}
 
-	if !DBTableExists(db, "dirs") {
+	if !db.TableExists("dirs") {
 		tables = append(tables, "dirs")
 	}
-	if !DBTableExists(db, "files") {
+	if !db.TableExists("files") {
 		tables = append(tables, "files")
 	}
-	if !DBTableExists(db, "infos") {
+	if !db.TableExists("infos") {
 		tables = append(tables, "infos")
 	}
 
 	return tables, len(tables) <= 0
 }
 
-func DBHasData(db *sql.DB) ([]string, bool) {
+func (db *DB) HasData() ([]string, bool) {
 	var tables []string = []string{}
 
-	if DBQueryDirsCount(db) <= 0 {
+	if db.QueryDirsCount() <= 0 {
 		tables = append(tables, "dirs")
 	}
 
-	if DBQueryFilesCount(db) <= 0 {
+	if db.QueryFilesCount() <= 0 {
 		tables = append(tables, "files")
 	}
 
 	return tables, len(tables) <= 0
 }
 
-func DBNoData(db *sql.DB) ([]string, bool) {
+func (db *DB) NoData() ([]string, bool) {
 	var tables []string = []string{}
 
-	if DBQueryDirsCount(db) > 0 {
+	if db.QueryDirsCount() > 0 {
 		tables = append(tables, "dirs")
 	}
 
-	if DBQueryFilesCount(db) > 0 {
+	if db.QueryFilesCount() > 0 {
 		tables = append(tables, "files")
 	}
 
@@ -66,86 +68,86 @@ func DBNoData(db *sql.DB) ([]string, bool) {
 
 // files
 
-func DBNeedCheckSum(db *sql.DB) (int64, bool) {
+func (db *DB) NeedCheckSum() (int64, bool) {
 
-	count := DBQueryNoSHA1FilesCount(db)
+	count := db.QueryNoSHA1FilesCount()
 
 	return count, count > 0
 }
 
 //// query if the tables exists.
 
-func DBTableExists(db *sql.DB, table_name string) bool {
+func (db *DB) TableExists(table_name string) bool {
 	var name string
 
-	row := DBQueryRow(db, SQL_CHECK_TABLE, table_name)
+	row := db.QueryRow(SQL_CHECK_TABLE, table_name)
 
 	err := row.Scan(&name)
 
 	return err == nil
 }
 
-func DBDirsTableExists(db *sql.DB) bool {
-	return DBTableExists(db, "dirs")
+func (db *DB) DirsTableExists() bool {
+	return db.TableExists("dirs")
 }
 
-func DBFilesTableExists(db *sql.DB) bool {
-	return DBTableExists(db, "files")
+func (db *DB) FilesTableExists() bool {
+	return db.TableExists("files")
 }
 
-func DBInfosTableExists(db *sql.DB) bool {
-	return DBTableExists(db, "infos")
+func (db *DB) InfosTableExists() bool {
+	return db.TableExists("infos")
 }
 
 //// create the tables.
 
-func DBCreateDirsTable(db *sql.DB) {
-	DBExec(db, SQL_CREATE_DIRS)
+func (db *DB) CreateDirsTable() {
+	db.Exec(SQL_CREATE_DIRS)
 }
 
-func DBCreateFilesTable(db *sql.DB) {
-	DBExec(db, SQL_CREATE_FILES)
+func (db *DB) CreateFilesTable() {
+	db.Exec(SQL_CREATE_FILES)
 }
 
-func DBCreateVDirsTable(db *sql.DB) {
-	DBExec(db, SQL_CREATE_VDIRS)
+func (db *DB) CreateVDirsTable() {
+	db.Exec(SQL_CREATE_VDIRS)
 }
 
-func DBCreateVFilesTable(db *sql.DB) {
-	DBExec(db, SQL_CREATE_VFILES)
+func (db *DB) CreateVFilesTable() {
+	db.Exec(SQL_CREATE_VFILES)
 }
 
-func DBCreateInfosTable(db *sql.DB) {
-	DBExec(db, SQL_CREATE_INFOS)
+func (db *DB) CreateInfosTable() {
+	db.Exec(SQL_CREATE_INFOS)
 }
 
 //// query the tables.
 
 // dirs
 
-func DBGetRootDir(db *sql.DB) Dir {
+func (db *DB) GetRootDir() Dir {
 	var dir Dir
 
-	row := DBQueryRow(db, SQL_GET_ROOT_DIR)
+	row := db.QueryRow(SQL_GET_ROOT_DIR)
 	DBScanRow(row, SQL_GET_ROOT_DIR,
 		&dir.id, &dir.parent_id, &dir.name, &dir.path)
 
 	return dir
 }
 
-func DBQueryDirsCount(db *sql.DB) int64 {
+func (db *DB) QueryDirsCount() int64 {
 	var count int64 = 0
 
-	row := DBQueryRow(db, SQL_COUNT_DIRS)
+	row := db.QueryRow(SQL_COUNT_DIRS)
 	DBScanRow(row, SQL_COUNT_DIRS, &count)
 
 	return count
 }
 
-func DBQueryMaxDirID(db *sql.DB) int64 {
+func (db *DB) QueryMaxDirID() int64 {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_MAX_DIR_ID)
+	row := db.QueryRow(SQL_MAX_DIR_ID)
 	DBScanRow(row, SQL_MAX_DIR_ID, &id)
 
 	index, _ := DBGetIDIndex(id)
@@ -153,11 +155,11 @@ func DBQueryMaxDirID(db *sql.DB) int64 {
 	return index
 }
 
-func DBGetAllDirs(db *sql.DB) map[string]*Dir {
+func (db *DB) GetAllDirs() map[string]*Dir {
 
 	var dirs map[string]*Dir = make(map[string]*Dir)
 
-	rows := DBQueryRows(db, SQL_GET_ALL_DIRS)
+	rows := db.QueryRows(SQL_GET_ALL_DIRS)
 	defer rows.Close()
 
 	for rows.Next() {
@@ -172,26 +174,26 @@ func DBGetAllDirs(db *sql.DB) map[string]*Dir {
 	return dirs
 }
 
-func DBQueryDirIDFromPath(db *sql.DB, path string) string {
+func (db *DB) QueryDirIDFromPath(path string) string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_PATH_GET_DIR_ID, path)
+	row := db.QueryRow(SQL_PATH_GET_DIR_ID, path)
 	DBScanRow(row, SQL_PATH_GET_DIR_ID, &id)
 
 	return id
 }
 
-func DBGetADirID(db *sql.DB) string {
+func (db *DB) GetADirID() string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_GET_A_DIR_ID)
+	row := db.QueryRow(SQL_GET_A_DIR_ID)
 	DBScanRow(row, SQL_GET_A_DIR_ID, &id)
 
 	return id
 }
 
-func DBGetDirIDPrefix(db *sql.DB) string {
-	id := DBGetADirID(db)
+func (db *DB) GetDirIDPrefix() string {
+	id := db.GetADirID()
 
 	prefix, _ := DBGetIDPrefix(id)
 
@@ -200,19 +202,19 @@ func DBGetDirIDPrefix(db *sql.DB) string {
 
 // files
 
-func DBQueryFilesCount(db *sql.DB) int64 {
+func (db *DB) QueryFilesCount() int64 {
 	var count int64 = 0
 
-	row := DBQueryRow(db, SQL_COUNT_FILES)
+	row := db.QueryRow(SQL_COUNT_FILES)
 	DBScanRow(row, SQL_COUNT_FILES, &count)
 
 	return count
 }
 
-func DBQueryMaxFileIndex(db *sql.DB) int64 {
+func (db *DB) QueryMaxFileIndex() int64 {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_MAX_FILE_ID)
+	row := db.QueryRow(SQL_MAX_FILE_ID)
 	DBScanRow(row, SQL_MAX_FILE_ID, &id)
 
 	index, _ := DBGetIDIndex(id)
@@ -220,11 +222,11 @@ func DBQueryMaxFileIndex(db *sql.DB) int64 {
 	return index
 }
 
-func DBGetAllFiles(db *sql.DB) map[string]*File {
+func (db *DB) GetAllFiles() map[string]*File {
 
 	var files map[string]*File = make(map[string]*File)
 
-	rows := DBQueryRows(db, SQL_GET_ALL_FILES)
+	rows := db.QueryRows(SQL_GET_ALL_FILES)
 	defer rows.Close()
 
 	for rows.Next() {
@@ -239,20 +241,20 @@ func DBGetAllFiles(db *sql.DB) map[string]*File {
 	return files
 }
 
-func DBQueryNoSHA1FilesCount(db *sql.DB) int64 {
+func (db *DB) QueryNoSHA1FilesCount() int64 {
 	var count int64 = 0
 
-	row := DBQueryRow(db, SQL_GET_NO_SHA1_FILES_COUNT)
+	row := db.QueryRow(SQL_GET_NO_SHA1_FILES_COUNT)
 	DBScanRow(row, SQL_GET_NO_SHA1_FILES_COUNT, &count)
 
 	return count
 }
 
-func DBGetNoSHA1Files(db *sql.DB) map[string]*File {
+func (db *DB) GetNoSHA1Files() map[string]*File {
 
 	var files map[string]*File = make(map[string]*File)
 
-	rows := DBQueryRows(db, SQL_GET_NO_SHA1_FILES)
+	rows := db.QueryRows(SQL_GET_NO_SHA1_FILES)
 	defer rows.Close()
 
 	for rows.Next() {
@@ -267,26 +269,26 @@ func DBGetNoSHA1Files(db *sql.DB) map[string]*File {
 	return files
 }
 
-func DBQueryFileIDFromPath(db *sql.DB, path string) string {
+func (db *DB) QueryFileIDFromPath(path string) string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_PATH_GET_FILE_ID, path)
+	row := db.QueryRow(SQL_PATH_GET_FILE_ID, path)
 	DBScanRow(row, SQL_PATH_GET_FILE_ID, &id)
 
 	return id
 }
 
-func DBGetAFileID(db *sql.DB) string {
+func (db *DB) GetAFileID() string {
 	var id string = ""
 
-	row := DBQueryRow(db, SQL_GET_A_FILE_ID)
+	row := db.QueryRow(SQL_GET_A_FILE_ID)
 	DBScanRow(row, SQL_GET_A_FILE_ID, &id)
 
 	return id
 }
 
-func DBGetFileIDPrefix(db *sql.DB) string {
-	id := DBGetAFileID(db)
+func (db *DB) GetFileIDPrefix() string {
+	id := db.GetAFileID()
 
 	prefix, _ := DBGetIDPrefix(id)
 
@@ -295,10 +297,10 @@ func DBGetFileIDPrefix(db *sql.DB) string {
 
 // infos
 
-func DBGetVersion(db *sql.DB) int {
+func (db *DB) GetVersion() int {
 	var version int
 
-	row := DBQueryRow(db, SQL_GET_VERSION)
+	row := db.QueryRow(SQL_GET_VERSION)
 	DBScanRow(row, SQL_GET_VERSION, &version)
 
 	return version
@@ -308,126 +310,126 @@ func DBGetVersion(db *sql.DB) int {
 
 // dirs
 
-func DBAddDir(db *sql.DB, dir *Dir) {
-	DBExec(db, SQL_ADD_DIR,
+func (db *DB) AddDir(dir *Dir) {
+	db.Exec(SQL_ADD_DIR,
 		dir.id, dir.parent_id, dir.name, dir.path, dir.mod_time)
 }
 
 // files
 
-func DBAddFile(db *sql.DB, file *File) {
-	DBExec(db, SQL_ADD_FILE,
+func (db *DB) AddFile(file *File) {
+	db.Exec(SQL_ADD_FILE,
 		file.id, file.parent_id, file.name, file.path, file.size, file.mod_time)
 }
 
 // infos
 
-func DBAddInfo(db *sql.DB, version int) {
-	DBExec(db, SQL_ADD_INFO, version)
+func (db *DB) AddInfo(version int) {
+	db.Exec(SQL_ADD_INFO, version)
 }
 
 //// update the tables.
 
 // dirs
 
-func DBModRootDir(db *sql.DB, path string) {
-	DBExec(db, SQL_MOD_ROOT_DIR, path, path)
+func (db *DB) ModRootDir(path string) {
+	db.Exec(SQL_MOD_ROOT_DIR, path, path)
 }
 
-func DBTrimDirsID(db *sql.DB) {
-	DBExec(db, SQL_TRIM_DIRS_ID)
+func (db *DB) TrimDirsID() {
+	db.Exec(SQL_TRIM_DIRS_ID)
 }
 
-func DBReplaceDirsPath(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_DIRS_PATH, dst, src)
+func (db *DB) ReplaceDirsPath(src string, dst string) {
+	db.Exec(SQL_REPLACE_DIRS_PATH, dst, src)
 }
 
-func DBModDirError(db *sql.DB, id string, code int) {
-	DBExec(db, SQL_MOD_DIR_ERROR, code, id)
+func (db *DB) ModDirError(id string, code int) {
+	db.Exec(SQL_MOD_DIR_ERROR, code, id)
 }
 
-func DBModDirsDiskID(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_DIRS_ID, src, dst)
-	DBExec(db, SQL_REPLACE_DIRS_PARENT_ID, src, dst)
+func (db *DB) ModDirsDiskID(src string, dst string) {
+	db.Exec(SQL_REPLACE_DIRS_ID, src, dst)
+	db.Exec(SQL_REPLACE_DIRS_PARENT_ID, src, dst)
 
-	DBExec(db, SQL_REPLACE_FILES_PARENT_ID, src, dst)
+	db.Exec(SQL_REPLACE_FILES_PARENT_ID, src, dst)
 }
 
 // files
 
-func DBModFileSha1OrStatus(db *sql.DB, file *File) {
+func (db *DB) ModFileSha1OrStatus(file *File) {
 	if file.status == 0 {
-		DBModFileSha1(db, file.id, file.sha1)
+		db.ModFileSha1(file.id, file.sha1)
 	} else {
-		DBModFileStatus(db, file.id, file.status)
+		db.ModFileStatus(file.id, file.status)
 	}
 }
 
-func DBTrimFilesID(db *sql.DB) {
-	DBExec(db, SQL_TRIM_FILES_ID)
+func (db *DB) TrimFilesID() {
+	db.Exec(SQL_TRIM_FILES_ID)
 }
 
-func DBReplaceFilesPath(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_FILES_PATH, dst, src)
+func (db *DB) ReplaceFilesPath(src string, dst string) {
+	db.Exec(SQL_REPLACE_FILES_PATH, dst, src)
 }
 
-func DBModDirFilesError(db *sql.DB, id string, code int8) {
-	DBExec(db, SQL_MOD_DIR_FILES_ERROR, code, id)
+func (db *DB) ModDirFilesError(id string, code int8) {
+	db.Exec(SQL_MOD_DIR_FILES_ERROR, code, id)
 }
 
-func DBModFileSha1(db *sql.DB, id string, sha1 string) {
-	DBExec(db, SQL_MOD_FILE_SHA1, sha1, id)
+func (db *DB) ModFileSha1(id string, sha1 string) {
+	db.Exec(SQL_MOD_FILE_SHA1, sha1, id)
 }
 
-func DBModFileStatus(db *sql.DB, id string, status int8) {
-	DBExec(db, SQL_MOD_FILE_STATUS, status, id)
+func (db *DB) ModFileStatus(id string, status int8) {
+	db.Exec(SQL_MOD_FILE_STATUS, status, id)
 }
 
-func DBModFileError(db *sql.DB, id string, code int8) {
-	DBExec(db, SQL_MOD_FILE_ERROR, code, id)
+func (db *DB) ModFileError(id string, code int8) {
+	db.Exec(SQL_MOD_FILE_ERROR, code, id)
 }
 
-func DBModFileDupID(db *sql.DB, id string, dup_id string) {
-	DBExec(db, SQL_MOD_FILE_ERROR, dup_id, id)
+func (db *DB) ModFileDupID(id string, dup_id string) {
+	db.Exec(SQL_MOD_FILE_ERROR, dup_id, id)
 }
 
-func DBModFilesDiskID(db *sql.DB, src string, dst string) {
-	DBExec(db, SQL_REPLACE_FILES_ID, src, dst)
+func (db *DB) ModFilesDiskID(src string, dst string) {
+	db.Exec(SQL_REPLACE_FILES_ID, src, dst)
 }
 
-func DBBulkModFilesSha1(db *sql.DB, files *[]*File) {
-	DBBeginBulk(db)
+func (db *DB) BulkModFilesSha1(files *[]*File) {
+	db.BeginBulk()
 
 	for _, file := range *files {
-		DBModFileSha1OrStatus(db, file)
+		db.ModFileSha1OrStatus(file)
 	}
 
-	DBEndBulk(db)
+	db.EndBulk()
 }
 
 // infos
 
-func DBModVersion(db *sql.DB, version int) {
-	DBExec(db, SQL_MOD_VERSION, version)
+func (db *DB) ModVersion(version int) {
+	db.Exec(SQL_MOD_VERSION, version)
 }
 
 // // common
 
-func DBBeginBulk(db *sql.DB) {
-	DBExec(db, SQL_BEGIN)
+func (db *DB) BeginBulk() {
+	db.Exec(SQL_BEGIN)
 }
 
-func DBEndBulk(db *sql.DB) {
-	DBExec(db, SQL_END)
+func (db *DB) EndBulk() {
+	db.Exec(SQL_END)
 }
 
-func DBExec(db *sql.DB, sql_name string, args ...interface{}) {
-	_, err := g_dot.Exec(db, sql_name, args...)
+func (db *DB) Exec(sql_name string, args ...interface{}) {
+	_, err := g_dot.Exec((*sql.DB)(db), sql_name, args...)
 	Check(err, "db error when run SQL %s", sql_name)
 }
 
-func DBQueryRow(db *sql.DB, sql_name string, args ...interface{}) *sql.Row {
-	row, err := g_dot.QueryRow(db, sql_name, args...)
+func (db *DB) QueryRow(sql_name string, args ...interface{}) *sql.Row {
+	row, err := g_dot.QueryRow((*sql.DB)(db), sql_name, args...)
 	Check(err, "db error when run SQL %s", sql_name)
 
 	return row
@@ -438,8 +440,8 @@ func DBScanRow(row *sql.Row, sql_name string, dest ...any) bool {
 	return err == nil
 }
 
-func DBQueryRows(db *sql.DB, sql_name string, args ...interface{}) *sql.Rows {
-	rows, err := g_dot.Query(db, sql_name, args...)
+func (db *DB) QueryRows(sql_name string, args ...interface{}) *sql.Rows {
+	rows, err := g_dot.Query((*sql.DB)(db), sql_name, args...)
 	Check(err, "db error when run SQL %s", sql_name)
 
 	return rows

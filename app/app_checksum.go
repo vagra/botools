@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"sync"
 	"time"
@@ -132,7 +131,7 @@ func SumChecker(wg *sync.WaitGroup, disk_name string, i int, ci <-chan *File, co
 func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 	defer wg.Done()
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	total := len(g_map_files[disk_name])
 
@@ -153,7 +152,7 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 
 				fmt.Printf("%s: %d/%d\n", disk_name, count, total)
 
-				DBBulkModFilesSha1(db, &files)
+				db.BulkModFilesSha1(&files)
 				files = nil
 
 				fmt.Printf("%s: writer stop.\n", disk_name)
@@ -167,7 +166,7 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 			if count%INSERT_COUNT == 0 {
 				fmt.Printf("%s: %d/%d\n", disk_name, count, total)
 
-				DBBulkModFilesSha1(db, &files)
+				db.BulkModFilesSha1(&files)
 				files = nil
 			}
 
@@ -180,11 +179,11 @@ func SumWriter(wg *sync.WaitGroup, disk_name string, co <-chan *File) {
 func GetCheckSumTasks(disk_name string) {
 
 	var db_path string = GetDBPath(disk_name)
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	fmt.Printf("%s: 从数据库 %s 中读取没有 sha1 的文件\n", disk_name, db_path)
 
-	files := DBGetNoSHA1Files(db)
+	files := db.GetNoSHA1Files()
 
 	g_map_files[disk_name] = files
 

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"fmt"
 	"sync"
 )
@@ -59,23 +58,23 @@ func MTModDiskIDs() {
 func ModDiskIDsWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
 
-	var db *sql.DB = g_dbs[disk_name]
+	var db *DB = g_dbs[disk_name]
 
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start change disk-id in db %s\n", disk_name, db_path)
 
-	dir_src := DBGetDirIDPrefix(db)
+	dir_src := db.GetDirIDPrefix()
 	dir_dst := GetDirPrefix(disk_name)
 
-	file_src := DBGetFileIDPrefix(db)
+	file_src := db.GetFileIDPrefix()
 	file_dst := GetFilePrefix(disk_name)
 
 	fmt.Printf("%s -> %s\n", dir_src, dir_dst)
 	fmt.Printf("%s -> %s\n", file_src, file_dst)
 
-	DBModDirsDiskID(db, dir_src, dir_dst)
-	DBModFilesDiskID(db, file_src, file_dst)
+	db.ModDirsDiskID(dir_src, dir_dst)
+	db.ModFilesDiskID(file_src, file_dst)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
