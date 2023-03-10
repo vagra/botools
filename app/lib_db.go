@@ -137,14 +137,14 @@ func (db *DB) CreateInfosTable() {
 
 // dirs
 
-func (db *DB) GetRootDir() Dir {
+func (db *DB) GetRootDir() *Dir {
 	var dir Dir
 
 	row := db.QueryRow(SQL_GET_ROOT_DIR)
 	DBScanRow(row, SQL_GET_ROOT_DIR,
-		&dir.id, &dir.parent_id, &dir.name, &dir.path)
+		&dir.id, &dir.parent_id, &dir.name, &dir.path, &dir.status, &dir.error)
 
-	return dir
+	return &dir
 }
 
 func (db *DB) QueryDirsCount() int64 {
@@ -156,7 +156,7 @@ func (db *DB) QueryDirsCount() int64 {
 	return count
 }
 
-func (db *DB) QueryMaxDirID() int64 {
+func (db *DB) QueryMaxDirIndex() int64 {
 	var id string = ""
 
 	row := db.QueryRow(SQL_MAX_DIR_ID)
@@ -186,13 +186,13 @@ func (db *DB) GetAllDirs() map[string]*Dir {
 	return dirs
 }
 
-func (db *DB) QueryDirIDFromPath(path string) string {
+func (db *DB) QueryDirIDFromPath(path string) (string, bool) {
 	var id string = ""
 
 	row := db.QueryRow(SQL_PATH_GET_DIR_ID, path)
 	DBScanRow(row, SQL_PATH_GET_DIR_ID, &id)
 
-	return id
+	return id, len(id) > 8
 }
 
 func (db *DB) GetADirID() string {
@@ -281,13 +281,13 @@ func (db *DB) GetNoSHA1Files() map[string]*File {
 	return files
 }
 
-func (db *DB) QueryFileIDFromPath(path string) string {
+func (db *DB) QueryFileIDFromPath(path string) (string, bool) {
 	var id string = ""
 
 	row := db.QueryRow(SQL_PATH_GET_FILE_ID, path)
 	DBScanRow(row, SQL_PATH_GET_FILE_ID, &id)
 
-	return id
+	return id, len(id) > 8
 }
 
 func (db *DB) GetAFileID() string {
@@ -352,8 +352,16 @@ func (db *DB) TrimDirsID() {
 	db.Exec(SQL_TRIM_DIRS_ID)
 }
 
+func (db *DB) ModDirsStatus(status int) {
+	db.Exec(SQL_MOD_DIRS_STATUS, status)
+}
+
 func (db *DB) ReplaceDirsPath(src string, dst string) {
 	db.Exec(SQL_REPLACE_DIRS_PATH, dst, src)
+}
+
+func (db *DB) ModDirStatus(id string, status int8) {
+	db.Exec(SQL_MOD_DIR_STATUS, status, id)
 }
 
 func (db *DB) ModDirError(id string, code int) {
@@ -379,6 +387,10 @@ func (db *DB) ModFileSha1OrStatus(file *File) {
 
 func (db *DB) TrimFilesID() {
 	db.Exec(SQL_TRIM_FILES_ID)
+}
+
+func (db *DB) ModFilesStatus(status int) {
+	db.Exec(SQL_MOD_FILES_STATUS, status)
 }
 
 func (db *DB) ReplaceFilesPath(src string, dst string) {

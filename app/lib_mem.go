@@ -48,20 +48,27 @@ func LoadHasDataDBs2Mem() {
 func BakeMemDBs() {
 	println("持久化内存数据库到 dbs")
 
-	for disk_name, mem := range g_dbs {
-
-		db_path := GetDBPath(disk_name)
-		db := DBOpen(db_path)
-
-		CheckBakeDB(mem, db)
-
-		mem.Close()
-		mem = nil
-
-		db.Close()
-		db = nil
-		println(db_path)
+	for disk_name := range g_dbs {
+		BakeMemDB(disk_name)
 	}
+}
+
+func BakeMemDB(disk_name string) {
+
+	db_path := GetDBPath(disk_name)
+
+	fmt.Printf("save mem db to db %s\n", db_path)
+
+	mem := g_dbs[disk_name]
+	db := DBOpen(db_path)
+
+	CheckBakeDB(mem, db)
+
+	mem.Close()
+	mem = nil
+
+	db.Close()
+	db = nil
 }
 
 func CheckBackupAllDBs() {

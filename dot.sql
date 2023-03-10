@@ -114,7 +114,7 @@ INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES
 
 
 -- name: get-root-dir
-SELECT id, parent_id, name, path FROM dirs WHERE parent_id = '0' LIMIT 1;
+SELECT id, parent_id, name, path, status, error FROM dirs WHERE parent_id = '0' LIMIT 1;
 
 -- name: get-dirs-count
 SELECT count(id) FROM dirs;
@@ -165,6 +165,9 @@ UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
 -- name: trim-dirs-id
 UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
 
+-- name: mod-dirs-status
+UPDATE dirs SET status = ?;
+
 -- name: replace-dirs-path
 UPDATE dirs SET path = ( ? || substr(path, length(?)+1) );
 
@@ -174,11 +177,18 @@ UPDATE dirs SET id = REPLACE(id, ?, ?);
 -- name: replace-dirs-parent-id
 UPDATE dirs SET parent_id = REPLACE(parent_id, ?, ?);
 
+-- name: mod-dir-status
+UPDATE dirs SET status = ? WHERE id = ?;
+
 -- name: mod-dir-error
 UPDATE dirs SET error = ? WHERE id = ?;
 
+
 -- name: trim-files-id
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
+
+-- name: mod-files-status
+UPDATE files SET status = ?;
 
 -- name: replace-files-path
 UPDATE files SET path = ( ? || substr(path, length(?)+1) );

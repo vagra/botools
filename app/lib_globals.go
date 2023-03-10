@@ -70,12 +70,15 @@ const SQL_GET_VERSION string = "get-db-version"
 
 const SQL_MOD_ROOT_DIR string = "mod-root-dir"
 const SQL_TRIM_DIRS_ID string = "trim-dirs-id"
+const SQL_MOD_DIRS_STATUS string = "mod-dirs-status"
 const SQL_REPLACE_DIRS_PATH string = "replace-dirs-path"
 const SQL_REPLACE_DIRS_ID string = "replace-dirs-id"
 const SQL_REPLACE_DIRS_PARENT_ID string = "replace-dirs-parent-id"
 const SQL_MOD_DIR_ERROR string = "mod-dir-error"
+const SQL_MOD_DIR_STATUS string = "mod-dir-status"
 
 const SQL_TRIM_FILES_ID string = "trim-files-id"
+const SQL_MOD_FILES_STATUS string = "mod-files-status"
 const SQL_REPLACE_FILES_PATH string = "replace-files-path"
 const SQL_REPLACE_FILES_ID string = "replace-files-id"
 const SQL_REPLACE_FILES_PARENT_ID string = "replace-files-parent-id"
@@ -117,11 +120,6 @@ var g_map_files map[string]map[string]*File
 
 var g_dirs_counter map[string]*int64
 var g_files_counter map[string]*int64
-
-var g_mod_dir_ids map[string]map[string]string
-var g_add_dir_ids map[string]map[string]string
-var g_mod_file_ids map[string]map[string]string
-var g_add_file_ids map[string]map[string]string
 
 var g_latest int
 

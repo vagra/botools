@@ -118,9 +118,9 @@ func MoveDBErrors(disk_name string) {
 
 func MoveDBErrorDir(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
-	id := db.QueryDirIDFromPath(path)
+	id, ok := db.QueryDirIDFromPath(path)
 
-	if len(id) <= 0 {
+	if !ok {
 		fmt.Printf("%s no dir %s\n", db_path, path)
 		log.Printf("%s no dir %s\n", db_path, path)
 		return
@@ -134,9 +134,9 @@ func MoveDBErrorDir(db_path string, db *DB, item *ErrorItem) {
 
 func MoveDBErrorFile(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
-	id := db.QueryFileIDFromPath(path)
+	id, ok := db.QueryFileIDFromPath(path)
 
-	if len(id) <= 0 {
+	if !ok {
 		fmt.Printf("%s no file %s\n", db_path, path)
 		log.Printf("%s no file %s\n", db_path, path)
 		return

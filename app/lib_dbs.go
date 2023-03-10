@@ -221,6 +221,23 @@ func GetHasErrorDBs() {
 	}
 }
 
+func GetDBCounters() {
+	println("获取每个数据库的 dirs 和 files 的 id 计数器")
+
+	g_dirs_counter = make(map[string]*int64)
+	g_files_counter = make(map[string]*int64)
+
+	for disk_name, db := range g_dbs {
+
+		dir_counter := db.QueryMaxDirIndex()
+		file_counter := db.QueryMaxFileIndex()
+		g_dirs_counter[disk_name] = &dir_counter
+		g_files_counter[disk_name] = &file_counter
+
+		fmt.Printf("%s index: dir%8d file%8d\n", disk_name, dir_counter, file_counter)
+	}
+}
+
 func CheckDBExists(db_name string) {
 	if !DBExists(db_name) {
 		db_path := GetDBPath(db_name)

@@ -33,18 +33,18 @@ func SyncReal2DB() error {
 	CheckAllDBRootPathCorrect()
 
 	println()
+	ConfirmReal2DB()
+
+	println()
 	LoadHasDataDBs2Mem()
 
 	CheckTaskHasDBs()
 
 	println()
-	ConfirmReal2DB()
+	GetDBCounters()
 
 	println()
 	MTReal2DB()
-
-	println()
-	BakeMemDBs()
 
 	println()
 	println("sync real tree to db done!")
@@ -73,9 +73,9 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 
-	db := g_dbs[disk_name]
+	ReadRealTree(disk_name)
 
-	fmt.Printf("%s files: %d\n", disk_name, db.QueryFilesCount())
+	BakeMemDB(disk_name)
 
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
