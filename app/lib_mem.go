@@ -57,7 +57,7 @@ func BakeMemDB(disk_name string) {
 
 	db_path := GetDBPath(disk_name)
 
-	fmt.Printf("save mem db to db %s\n", db_path)
+	fmt.Printf("bake memory db to %s\n", db_path)
 
 	mem := g_dbs[disk_name]
 	db := DBOpen(db_path)

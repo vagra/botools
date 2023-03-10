@@ -234,7 +234,7 @@ func GetDBCounters() {
 		g_dirs_counter[disk_name] = &dir_counter
 		g_files_counter[disk_name] = &file_counter
 
-		fmt.Printf("%s index: dir%8d file%8d\n", disk_name, dir_counter, file_counter)
+		fmt.Printf("%s index: dir %d, file %d\n", disk_name, dir_counter, file_counter)
 	}
 }
 

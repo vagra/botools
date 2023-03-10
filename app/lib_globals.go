@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.4.0"
+const VERSION = "1.4.1"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000

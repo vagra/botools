@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 func SyncReal2DB() error {
@@ -69,6 +70,8 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	defer wg.Done()
 
+	start := time.Now()
+
 	disk_path := g_disks[disk_name]
 
 	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
@@ -77,7 +80,7 @@ func Real2DBWorker(wg *sync.WaitGroup, disk_name string) {
 
 	BakeMemDB(disk_name)
 
-	fmt.Printf("%s worker: stop.\n", disk_name)
+	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
 func ConfirmReal2DB() {
