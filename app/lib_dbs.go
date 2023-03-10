@@ -21,7 +21,7 @@ func GetDBPath(disk_name string) string {
 }
 
 func GetOldDBPath(disk_name string) string {
-	return fmt.Sprintf("%s/%s.old%s", DB_DIR, disk_name, DB_EXT)
+	return fmt.Sprintf("%s/old.%s%s", DB_DIR, disk_name, DB_EXT)
 }
 
 func GetMemDBPath(disk_name string) string {
@@ -225,6 +225,15 @@ func CheckDBExists(db_name string) {
 	if !DBExists(db_name) {
 		db_path := GetDBPath(db_name)
 		fmt.Printf("数据库 %s 不存在\n", db_path)
+		println("请重启本程序并选择 1 以初始化该数据库")
+		WaitExit(1)
+	}
+}
+
+func CheckOldDBExists(db_name string) {
+	if !OldDBExists(db_name) {
+		old_path := GetOldDBPath(db_name)
+		fmt.Printf("备份数据库 %s 不存在\n", old_path)
 		println("请重启本程序并选择 1 以初始化该数据库")
 		WaitExit(1)
 	}

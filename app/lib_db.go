@@ -15,6 +15,12 @@ func DBExists(db_name string) bool {
 	return FileExists(db_path)
 }
 
+func OldDBExists(db_name string) bool {
+	old_path := GetOldDBPath(db_name)
+
+	return FileExists(old_path)
+}
+
 func DBOpen(db_path string) *DB {
 	db, err := sql.Open("sqlite3", db_path)
 	Check(err, "open db %s failed", db_path)
