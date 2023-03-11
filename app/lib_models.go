@@ -59,6 +59,10 @@ type VFile struct {
 	mod_time  string
 }
 
+// --------------------------------------------
+// general methods
+// --------------------------------------------
+
 func (d *Disk) Tuple() string {
 	return fmt.Sprintf("('%d', '%s', '%s', '%d')",
 		d.id, d.name, d.path, d.size)
@@ -88,4 +92,12 @@ func (d *VDir) Tuple() string {
 func (f *VFile) Tuple() string {
 	return fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%d', '%s')",
 		f.id, f.real_id, f.parent_id, f.name, f.path, f.status, f.mod_time)
+}
+
+// --------------------------------------------
+// methods of File
+// --------------------------------------------
+
+func (f *File) Sha1SizeKey() string {
+	return fmt.Sprintf("%s-%d", f.sha1, f.size)
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.4.1"
+const VERSION = "1.5.0"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -57,6 +57,7 @@ const SQL_MAX_DIR_ID string = "get-max-dir-id"
 const SQL_GET_ALL_DIRS string = "get-all-dirs"
 const SQL_PATH_GET_DIR_ID string = "get-dir-id-from-path"
 const SQL_GET_A_DIR_ID string = "get-a-dir-id"
+const SQL_GET_NEXT_DIR string = "get-next-dir"
 
 const SQL_COUNT_FILES string = "get-files-count"
 const SQL_MAX_FILE_ID string = "get-max-file-id"
@@ -65,6 +66,7 @@ const SQL_GET_NO_SHA1_FILES_COUNT string = "get-no-sha1-files-count"
 const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
 const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
 const SQL_GET_A_FILE_ID string = "get-a-file-id"
+const SQL_GET_NEXT_FILE string = "get-next-file"
 
 const SQL_GET_VERSION string = "get-db-version"
 
@@ -86,6 +88,7 @@ const SQL_MOD_DIR_FILES_ERROR string = "mod-dir-files-error"
 const SQL_MOD_FILE_SHA1 string = "mod-file-sha1"
 const SQL_MOD_FILE_STATUS string = "mod-file-status"
 const SQL_MOD_FILE_ERROR string = "mod-file-error"
+const SQL_MOD_FILE_DUP_ID string = "mod-file-dup-id"
 
 const SQL_MOD_VERSION string = "mod-db-version"
 
@@ -93,6 +96,8 @@ const GET_TREE_LOG string = "get_tree.log"
 const VIR_TREE_LOG string = "vir_tree.log"
 const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
+const DEDUP_DB_LOG string = "dedup_db.log"
+const DEDUP_MIRROR_LOG string = "dedup_mirror.log"
 const DB2VDB_LOG string = "db2vdb.log"
 const VDB2VIR_LOG string = "vdb2vir.log"
 const MOVE_ERRORS_LOG string = "move_errors.log"
@@ -121,6 +126,8 @@ var g_map_files map[string]map[string]*File
 var g_dirs_counter map[string]*int64
 var g_files_counter map[string]*int64
 
+var g_dup_files map[string]string
+
 var g_latest int
 
 var g_updater *selfupdate.Updater
@@ -141,9 +148,13 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
 6)    sync_real2db: 从物理目录同步数据库
       检查物理目录的文件夹和文件，更新数据库中的 dirs, files。
-7)    sync_db2vdb: 从数据库同步到虚拟数据库
+7)    dedup_db: 在数据库中查重
+      检查数据库中的 files，将重复文件的 dup_id 设为唯一文件的 id。
+8)    dedup_mirror: 在镜像目录下查重
+      根据查重后的数据库，删除镜像目录下所有的重复文件，只保留一个唯一文件。
+9)    sync_db2vdb: 从数据库同步到虚拟数据库
       把数据库中的 dirs 和 files 同步到 vdirs 和 vfiles。
-8)    sync_vdb2vir: 从虚拟数据库同步到虚拟目录树
+10)    sync_vdb2vir: 从虚拟数据库同步到虚拟目录树
       根据数据库中的 vdirs 和 vfiles 同步虚拟目录树。
 
 100)  update_self: 更新 botools

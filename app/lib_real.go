@@ -39,7 +39,7 @@ func ReadRealTree(disk_name string) {
 	db.ModDirsStatus(1)
 	db.ModFilesStatus(1)
 
-	root_dir := db.GetRootDir()
+	root_dir, _ := db.GetRootDir()
 
 	ReadRealDir(db, disk_name, root_dir)
 }

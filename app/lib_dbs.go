@@ -400,7 +400,7 @@ func AllDBRootPathCorrect() (map[string]string, bool) {
 
 		db := DBOpen(db_path)
 
-		dir := db.GetRootDir()
+		dir, _ := db.GetRootDir()
 
 		if dir.path != disk_path {
 			paths[db_path] = dir.path

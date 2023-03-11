@@ -7,7 +7,9 @@ import (
 
 type DB sql.DB
 
-//// query the dbs.
+// --------------------------------------------
+// query the dbs.
+// --------------------------------------------
 
 func DBExists(db_name string) bool {
 	db_path := GetDBPath(db_name)
@@ -78,7 +80,7 @@ func (db *DB) NoData() ([]string, bool) {
 	return tables, len(tables) <= 0
 }
 
-// files
+//////// files
 
 func (db *DB) NeedCheckSum() (int64, bool) {
 
@@ -87,7 +89,9 @@ func (db *DB) NeedCheckSum() (int64, bool) {
 	return count, count > 0
 }
 
-//// query if the tables exists.
+// --------------------------------------------
+// query if the tables exists.
+// --------------------------------------------
 
 func (db *DB) TableExists(table_name string) bool {
 	var name string
@@ -111,7 +115,9 @@ func (db *DB) InfosTableExists() bool {
 	return db.TableExists("infos")
 }
 
-//// create the tables.
+// --------------------------------------------
+// create the tables.
+// --------------------------------------------
 
 func (db *DB) CreateDirsTable() {
 	db.Exec(SQL_CREATE_DIRS)
@@ -133,18 +139,20 @@ func (db *DB) CreateInfosTable() {
 	db.Exec(SQL_CREATE_INFOS)
 }
 
-//// query the tables.
+// --------------------------------------------
+// query the tables.
+// --------------------------------------------
 
-// dirs
+//////// dirs
 
-func (db *DB) GetRootDir() *Dir {
+func (db *DB) GetRootDir() (*Dir, bool) {
 	var dir Dir
 
 	row := db.QueryRow(SQL_GET_ROOT_DIR)
-	DBScanRow(row, SQL_GET_ROOT_DIR,
+	ok := DBScanRow(row, SQL_GET_ROOT_DIR,
 		&dir.id, &dir.parent_id, &dir.name, &dir.path, &dir.status, &dir.error)
 
-	return &dir
+	return &dir, ok
 }
 
 func (db *DB) QueryDirsCount() int64 {
@@ -212,7 +220,17 @@ func (db *DB) GetDirIDPrefix() string {
 	return prefix
 }
 
-// files
+func (db *DB) GetNextDir(id string) (*Dir, bool) {
+	var dir Dir
+
+	row := db.QueryRow(SQL_GET_NEXT_DIR, id)
+	ok := DBScanRow(row, SQL_GET_NEXT_DIR,
+		&dir.id, &dir.parent_id, &dir.name, &dir.path, &dir.status, &dir.error)
+
+	return &dir, ok
+}
+
+//////// files
 
 func (db *DB) QueryFilesCount() int64 {
 	var count int64 = 0
@@ -307,7 +325,19 @@ func (db *DB) GetFileIDPrefix() string {
 	return prefix
 }
 
-// infos
+func (db *DB) GetNextFile(id string) (*File, bool) {
+	var file File
+
+	row := db.QueryRow(SQL_GET_NEXT_FILE, id)
+
+	ok := DBScanRow(row, SQL_GET_NEXT_FILE,
+		&file.id, &file.parent_id, &file.name, &file.path,
+		&file.size, &file.status, &file.error, &file.dup_id, &file.sha1)
+
+	return &file, ok
+}
+
+//////// infos
 
 func (db *DB) GetVersion() int {
 	var version int
@@ -318,31 +348,35 @@ func (db *DB) GetVersion() int {
 	return version
 }
 
-//// insert into tables.
+// --------------------------------------------
+// insert into tables.
+// --------------------------------------------
 
-// dirs
+//////// dirs
 
 func (db *DB) AddDir(dir *Dir) {
 	db.Exec(SQL_ADD_DIR,
 		dir.id, dir.parent_id, dir.name, dir.path, dir.mod_time)
 }
 
-// files
+//////// files
 
 func (db *DB) AddFile(file *File) {
 	db.Exec(SQL_ADD_FILE,
 		file.id, file.parent_id, file.name, file.path, file.size, file.mod_time)
 }
 
-// infos
+//////// infos
 
 func (db *DB) AddInfo(version int) {
 	db.Exec(SQL_ADD_INFO, version)
 }
 
-//// update the tables.
+// --------------------------------------------
+// update the tables.
+// --------------------------------------------
 
-// dirs
+//////// dirs
 
 func (db *DB) ModRootDir(path string) {
 	db.Exec(SQL_MOD_ROOT_DIR, path, path)
@@ -375,15 +409,7 @@ func (db *DB) ModDirsDiskID(src string, dst string) {
 	db.Exec(SQL_REPLACE_FILES_PARENT_ID, src, dst)
 }
 
-// files
-
-func (db *DB) ModFileSha1OrStatus(file *File) {
-	if file.status == 0 {
-		db.ModFileSha1(file.id, file.sha1)
-	} else {
-		db.ModFileStatus(file.id, file.status)
-	}
-}
+//////// files
 
 func (db *DB) TrimFilesID() {
 	db.Exec(SQL_TRIM_FILES_ID)
@@ -395,6 +421,10 @@ func (db *DB) ModFilesStatus(status int) {
 
 func (db *DB) ReplaceFilesPath(src string, dst string) {
 	db.Exec(SQL_REPLACE_FILES_PATH, dst, src)
+}
+
+func (db *DB) ModFilesDiskID(src string, dst string) {
+	db.Exec(SQL_REPLACE_FILES_ID, src, dst)
 }
 
 func (db *DB) ModDirFilesError(id string, code int8) {
@@ -414,11 +444,7 @@ func (db *DB) ModFileError(id string, code int8) {
 }
 
 func (db *DB) ModFileDupID(id string, dup_id string) {
-	db.Exec(SQL_MOD_FILE_ERROR, dup_id, id)
-}
-
-func (db *DB) ModFilesDiskID(src string, dst string) {
-	db.Exec(SQL_REPLACE_FILES_ID, src, dst)
+	db.Exec(SQL_MOD_FILE_DUP_ID, dup_id, id)
 }
 
 func (db *DB) BulkModFilesSha1(files *[]*File) {
@@ -431,13 +457,23 @@ func (db *DB) BulkModFilesSha1(files *[]*File) {
 	db.EndBulk()
 }
 
-// infos
+func (db *DB) ModFileSha1OrStatus(file *File) {
+	if file.status == 0 {
+		db.ModFileSha1(file.id, file.sha1)
+	} else {
+		db.ModFileStatus(file.id, file.status)
+	}
+}
+
+//////// infos
 
 func (db *DB) ModVersion(version int) {
 	db.Exec(SQL_MOD_VERSION, version)
 }
 
-// // common
+// --------------------------------------------
+// common function
+// --------------------------------------------
 
 func (db *DB) BeginBulk() {
 	db.Exec(SQL_BEGIN)

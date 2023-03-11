@@ -64,7 +64,7 @@ func ModPathsWorker(wg *sync.WaitGroup, disk_name string) {
 
 	fmt.Printf("%s worker: start replace paths in db %s\n", disk_name, db_path)
 
-	root_dir := db.GetRootDir()
+	root_dir, _ := db.GetRootDir()
 
 	old_root := root_dir.path
 	new_root := g_disks[disk_name]

@@ -1,3 +1,7 @@
+-- name: ----------------------------------------
+-- CREATE TABLES
+-------------------------------------------------
+
 -- name: create-dirs-table
 BEGIN TRANSACTION;
 
@@ -78,7 +82,9 @@ INSERT INTO infos (db_version) VALUES(4);
 
 COMMIT;
 
-
+-- name: ----------------------------------------
+-- COMMON
+-------------------------------------------------
 
 -- name: init-pragma
 PRAGMA journal_mode = WAL;
@@ -93,7 +99,9 @@ END
 -- name: check-table-exists
 SELECT name FROM sqlite_master WHERE type='table' AND name=?;
 
-
+-- name: ----------------------------------------
+-- INSERT
+-------------------------------------------------
 
 -- name: add-dir
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES(?, ?, ?, ?, ?);
@@ -104,6 +112,9 @@ INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES(?, ?, ?, ?,
 -- name: add-info
 INSERT INTO infos (db_version) VALUES(?);
 
+-- name: ----------------------------------------
+-- BATCH INSERT
+-------------------------------------------------
 
 -- name: add-dirs
 INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES
@@ -111,7 +122,11 @@ INSERT INTO dirs (id, parent_id, name, path, mod_time) VALUES
 -- name: add-files
 INSERT INTO files (id, parent_id, name, path, size, mod_time) VALUES
 
+-- name: ----------------------------------------
+-- QUERY
+-------------------------------------------------
 
+-- name: -------- query dirs --------
 
 -- name: get-root-dir
 SELECT id, parent_id, name, path, status, error FROM dirs WHERE parent_id = '0' LIMIT 1;
@@ -131,6 +146,10 @@ SELECT id FROM dirs WHERE path = ? LIMIT 1;
 -- name: get-a-dir-id
 SELECT id FROM dirs LIMIT 1;
 
+-- name: get-next-dir
+SELECT id, parent_id, name, path, status, error FROM dirs WHERE id > ? ORDER BY id LIMIT 1;
+
+-- name: -------- query files --------
 
 -- name: get-files-count
 SELECT count(id) FROM files;
@@ -153,11 +172,19 @@ SELECT id FROM files WHERE path = ? LIMIT 1;
 -- name: get-a-file-id
 SELECT id FROM files LIMIT 1;
 
+-- name: get-next-file
+SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE id > ? ORDER BY id LIMIT 1;
+
+-- name: -------- query infos --------
 
 -- name: get-db-version
 SELECT db_version FROM infos LIMIT 1;
 
+-- name: ----------------------------------------
+-- UPDATE
+-------------------------------------------------
 
+-- name: -------- update dirs --------
 
 -- name: mod-root-dir
 UPDATE dirs SET name = ?, path = ? WHERE parent_id = '0';
@@ -183,6 +210,7 @@ UPDATE dirs SET status = ? WHERE id = ?;
 -- name: mod-dir-error
 UPDATE dirs SET error = ? WHERE id = ?;
 
+-- name: -------- update files --------
 
 -- name: trim-files-id
 UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_id, '-00000000', '-');
@@ -214,10 +242,14 @@ UPDATE files SET error = ? WHERE id = ?;
 -- name: mod-file-dup-id
 UPDATE files SET dup_id = ? WHERE id = ?;
 
+-- name: -------- update infos --------
 
 -- name: mod-db-version
 UPDATE infos SET db_version=?;
 
+-- name: ----------------------------------------
+-- MIGRATIONS
+-------------------------------------------------
 
 -- name: migrate-v2
 BEGIN TRANSACTION;

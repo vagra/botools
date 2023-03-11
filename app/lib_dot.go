@@ -14,6 +14,16 @@ func ReadDotSQL() {
 	Check(err, "读取 %s 失败", DOT_SQL)
 }
 
+func PrintDotMap() {
+	query_map := g_dot.QueryMap()
+
+	for name, sql := range query_map {
+		println(name)
+		println(sql)
+		println()
+	}
+}
+
 func DotLatestVersion() int {
 
 	var version int = 1
