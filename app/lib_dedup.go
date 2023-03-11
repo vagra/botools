@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -11,12 +12,18 @@ func InitDupMap() {
 func DBDedup(disk_name string) {
 	db := g_dbs[disk_name]
 
+	count := 0
+
 	id := ""
 
 	for {
-		file, ok := db.GetNextFile(id)
+		file, ok := db.GetNextNodupFile(id)
 		if !ok {
 			break
+		}
+
+		if len(file.dup_id) > 8 {
+			continue
 		}
 
 		id = file.id
@@ -30,13 +37,12 @@ func DBDedup(disk_name string) {
 			continue
 		}
 
-		if file.dup_id == dup_id {
-			continue
-		}
-
 		file.dup_id = dup_id
 		db.ModFileDupID(file.id, file.dup_id)
 		log.Printf("%s\t==\t%s\n", file.id, file.dup_id)
+
+		count++
 	}
 
+	fmt.Printf("%s: %d dups found\n", disk_name, count)
 }

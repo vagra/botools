@@ -56,6 +56,7 @@ func STDedupDB() {
 
 	for name := range g_dbs {
 		DedupDBWorker(name)
+		println()
 	}
 }
 

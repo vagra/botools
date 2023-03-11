@@ -67,6 +67,7 @@ const SQL_GET_NO_SHA1_FILES string = "get-no-sha1-files"
 const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
 const SQL_GET_A_FILE_ID string = "get-a-file-id"
 const SQL_GET_NEXT_FILE string = "get-next-file"
+const SQL_GET_NEXT_NODUP_FILE string = "get-next-nodup-file"
 
 const SQL_GET_VERSION string = "get-db-version"
 

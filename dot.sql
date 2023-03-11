@@ -175,6 +175,9 @@ SELECT id FROM files LIMIT 1;
 -- name: get-next-file
 SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE id > ? ORDER BY id LIMIT 1;
 
+-- name: get-next-nodup-file
+SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE LENGTH(dup_id) <= 0 AND id > ? ORDER BY id LIMIT 1;
+
 -- name: -------- query infos --------
 
 -- name: get-db-version

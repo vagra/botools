@@ -337,6 +337,18 @@ func (db *DB) GetNextFile(id string) (*File, bool) {
 	return &file, ok
 }
 
+func (db *DB) GetNextNodupFile(id string) (*File, bool) {
+	var file File
+
+	row := db.QueryRow(SQL_GET_NEXT_NODUP_FILE, id)
+
+	ok := DBScanRow(row, SQL_GET_NEXT_NODUP_FILE,
+		&file.id, &file.parent_id, &file.name, &file.path,
+		&file.size, &file.status, &file.error, &file.dup_id, &file.sha1)
+
+	return &file, ok
+}
+
 //////// infos
 
 func (db *DB) GetVersion() int {
