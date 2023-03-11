@@ -80,6 +80,7 @@ func ConfirmDedupDB() {
 	println("1. 如果存在重复，则只保留一个主文件，将重复文件的 dup_id 设为主文件的 id，但不会删除条目")
 	println("2. 这是基于所有 disks 的跨盘查重")
 	println("3. 不检查或删除物理文件")
+	println("4. 已经标记为重复文件的，下次查重不会再处理它")
 	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
 	CheckConfirm()
