@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-func DedupDB() error {
+func DedupDBs() error {
 	println("start: de duplications in db")
 
 	println()
-	InitLog(DEDUP_DB_LOG)
+	InitLog(DEDUP_DBS_LOG)
 
 	println()
 	ReadConfig()
@@ -33,7 +33,7 @@ func DedupDB() error {
 	CheckAllDBRootPathCorrect()
 
 	println()
-	ConfirmDedupDB()
+	ConfirmDedupDBs()
 
 	println()
 	LoadHasDataDBs2Mem()
@@ -43,7 +43,7 @@ func DedupDB() error {
 	InitDupMap()
 
 	println()
-	STDedupDB()
+	STDedupDBs()
 
 	println()
 	println("de duplications in db done!")
@@ -51,31 +51,30 @@ func DedupDB() error {
 	return nil
 }
 
-func STDedupDB() {
+func STDedupDBs() {
 	println("使用单线程，对数据库中的 files 查重")
 
 	for name := range g_dbs {
-		DedupDBWorker(name)
+		DedupDBsWorker(name)
 		println()
 	}
 }
 
-func DedupDBWorker(disk_name string) {
+func DedupDBsWorker(disk_name string) {
+
+	db_path := GetDBPath(disk_name)
+	fmt.Printf("%s worker: start scan %s\n", disk_name, db_path)
 
 	start := time.Now()
 
-	db_path := GetDBPath(disk_name)
-
-	fmt.Printf("%s worker: start scan %s\n", disk_name, db_path)
-
-	DBDedup(disk_name)
+	DedupDB(disk_name)
 
 	BakeMemDB(disk_name)
 
 	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
-func ConfirmDedupDB() {
+func ConfirmDedupDBs() {
 	println("本程序用于对数据库中的 files 查重")
 	println("1. 如果存在重复，则只保留一个主文件，将重复文件的 dup_id 设为主文件的 id，但不会删除条目")
 	println("2. 这是基于所有 disks 的跨盘查重")

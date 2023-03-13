@@ -101,3 +101,7 @@ func (f *VFile) Tuple() string {
 func (f *File) Sha1SizeKey() string {
 	return fmt.Sprintf("%s-%d", f.sha1, f.size)
 }
+
+func (f *File) MirrorPath() string {
+	return ""
+}

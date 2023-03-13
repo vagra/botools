@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.5.2"
+const VERSION = "1.5.3"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -68,6 +68,7 @@ const SQL_PATH_GET_FILE_ID string = "get-file-id-from-path"
 const SQL_GET_A_FILE_ID string = "get-a-file-id"
 const SQL_GET_NEXT_FILE string = "get-next-file"
 const SQL_GET_NEXT_NODUP_FILE string = "get-next-nodup-file"
+const SQL_GET_NEXT_DUP_FILE string = "get-next-dup-file"
 
 const SQL_GET_VERSION string = "get-db-version"
 
@@ -97,8 +98,8 @@ const GET_TREE_LOG string = "get_tree.log"
 const VIR_TREE_LOG string = "vir_tree.log"
 const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
-const DEDUP_DB_LOG string = "dedup_db.log"
-const DEDUP_MIRROR_LOG string = "dedup_mirror.log"
+const DEDUP_DBS_LOG string = "dedup_dbs.log"
+const DEDUP_MIRRORS_LOG string = "dedup_mirrors.log"
 const DB2VDB_LOG string = "db2vdb.log"
 const VDB2VIR_LOG string = "vdb2vir.log"
 const MOVE_ERRORS_LOG string = "move_errors.log"
@@ -149,9 +150,9 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       不生成数据库，而是用软链接的方式生成虚拟的目录树。
 6)    sync_real2db: 从物理目录同步数据库
       检查物理目录的文件夹和文件，更新数据库中的 dirs, files。
-7)    dedup_db: 在数据库中查重
+7)    dedup_dbs: 在数据库中查重
       检查数据库中的 files，将重复文件的 dup_id 设为唯一文件的 id。
-8)    dedup_mirror: 在镜像目录下查重
+8)    dedup_mirrors: 在镜像目录下查重
       根据查重后的数据库，删除镜像目录下所有的重复文件，只保留一个唯一文件。
 9)    sync_db2vdb: 从数据库同步到虚拟数据库
       把数据库中的 dirs 和 files 同步到 vdirs 和 vfiles。

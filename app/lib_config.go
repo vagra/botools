@@ -28,7 +28,7 @@ func ReadConfig() {
 	g_roots = &Roots{}
 	g_roots.disks_root = cfg.Section("roots").Key("disks-root").String()
 	g_roots.errors_root = cfg.Section("roots").Key("errors-root").String()
-	g_roots.dups_root = cfg.Section("roots").Key("dups-root").String()
+	g_roots.mirrors_root = cfg.Section("roots").Key("mirrors-root").String()
 	g_roots.virs_root = cfg.Section("roots").Key("virs-root").String()
 
 	CheckHasRootsConfig()

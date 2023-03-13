@@ -178,6 +178,9 @@ SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files W
 -- name: get-next-nodup-file
 SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE LENGTH(dup_id) <= 0 AND LENGTH(sha1) >= 8 AND status = 0 AND error = 0 AND id > ? ORDER BY id LIMIT 1;
 
+-- name: get-next-dup-file
+SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE LENGTH(dup_id) >= 8 AND status = 0 AND error = 0 AND id > ? ORDER BY id LIMIT 1;
+
 -- name: -------- query infos --------
 
 -- name: get-db-version
@@ -199,7 +202,7 @@ UPDATE dirs SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_i
 UPDATE dirs SET status = ?;
 
 -- name: replace-dirs-path
-UPDATE dirs SET path = ( ? || substr(path, length(?)+1) );
+UPDATE dirs SET path = ( ? || substr(path, length(?)+1) ) WHERE path LIKE (? || '%');
 
 -- name: replace-dirs-id
 UPDATE dirs SET id = REPLACE(id, ?, ?);
@@ -222,7 +225,7 @@ UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_
 UPDATE files SET status = ?;
 
 -- name: replace-files-path
-UPDATE files SET path = ( ? || substr(path, length(?)+1) );
+UPDATE files SET path = ( ? || substr(path, length(?)+1) ) WHERE path LIKE (? || '%');
 
 -- name: replace-files-id
 UPDATE files SET id = REPLACE(id, ?, ?);

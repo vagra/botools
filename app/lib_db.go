@@ -349,6 +349,18 @@ func (db *DB) GetNextNodupFile(id string) (*File, bool) {
 	return &file, ok
 }
 
+func (db *DB) GetNextDupFile(id string) (*File, bool) {
+	var file File
+
+	row := db.QueryRow(SQL_GET_NEXT_DUP_FILE, id)
+
+	ok := DBScanRow(row, SQL_GET_NEXT_DUP_FILE,
+		&file.id, &file.parent_id, &file.name, &file.path,
+		&file.size, &file.status, &file.error, &file.dup_id, &file.sha1)
+
+	return &file, ok
+}
+
 //////// infos
 
 func (db *DB) GetVersion() int {
@@ -403,7 +415,7 @@ func (db *DB) ModDirsStatus(status int) {
 }
 
 func (db *DB) ReplaceDirsPath(src string, dst string) {
-	db.Exec(SQL_REPLACE_DIRS_PATH, dst, src)
+	db.Exec(SQL_REPLACE_DIRS_PATH, dst, src, src)
 }
 
 func (db *DB) ModDirStatus(id string, status int8) {
@@ -432,7 +444,7 @@ func (db *DB) ModFilesStatus(status int) {
 }
 
 func (db *DB) ReplaceFilesPath(src string, dst string) {
-	db.Exec(SQL_REPLACE_FILES_PATH, dst, src)
+	db.Exec(SQL_REPLACE_FILES_PATH, dst, src, src)
 }
 
 func (db *DB) ModFilesDiskID(src string, dst string) {

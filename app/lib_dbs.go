@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func CheckDBsDirExists() {
@@ -340,6 +341,20 @@ func CheckAllDBRootPathCorrect() {
 	}
 }
 
+func CheckAllDBRootPathInDisksRoot() {
+	fmt.Printf("检查是否所有数据库中的根路径都以 %s 中的 disks-root 开头\n", CONFIG_INI)
+
+	if paths, yes := AllDBRootPathInDisksRoot(); !yes {
+		fmt.Printf("检查到如下数据库中的根路径以 %s 中的 disks-root 开头：\n", CONFIG_INI)
+		for db_path, root_path := range paths {
+			fmt.Printf("%s\t%s\n", db_path, root_path)
+		}
+		fmt.Printf("disks-root = %s\n", g_roots.disks_root)
+		fmt.Printf("请检查 %s 和以上数据库\n", CONFIG_INI)
+		WaitExit(1)
+	}
+}
+
 func AllDBExists() ([]string, bool) {
 	var paths []string = []string{}
 
@@ -403,6 +418,26 @@ func AllDBRootPathCorrect() (map[string]string, bool) {
 		dir, _ := db.GetRootDir()
 
 		if dir.path != disk_path {
+			paths[db_path] = dir.path
+		}
+
+		db.Close()
+	}
+
+	return paths, len(paths) <= 0
+}
+
+func AllDBRootPathInDisksRoot() (map[string]string, bool) {
+	var paths map[string]string = make(map[string]string)
+
+	for disk_name := range g_disks {
+		db_path := GetDBPath(disk_name)
+
+		db := DBOpen(db_path)
+
+		dir, _ := db.GetRootDir()
+
+		if !strings.HasPrefix(dir.path, g_roots.disks_root) {
 			paths[db_path] = dir.path
 		}
 

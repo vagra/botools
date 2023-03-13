@@ -9,6 +9,35 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
+func OnlyReadHasDataDBs2Mem() {
+	println("加载所有 dirs 和 files 表都有数据的数据库到内存")
+
+	g_dbs = make(map[string]*DB)
+
+	for disk_name := range g_disks {
+
+		db_path := GetDBPath(disk_name)
+
+		CheckDBExists(disk_name)
+
+		db := DBOpen(db_path)
+
+		CheckDBInited(db, db_path)
+
+		CheckDBHasData(db, db_path)
+
+		mem_path := GetMemDBPath(disk_name)
+		mem := DBOpen(mem_path)
+		CheckBakeDB(db, mem)
+		println(mem_path)
+
+		db.Close()
+		db = nil
+
+		g_dbs[disk_name] = mem
+	}
+}
+
 func LoadHasDataDBs2Mem() {
 	println("加载所有 dirs 和 files 表都有数据的数据库到内存")
 
