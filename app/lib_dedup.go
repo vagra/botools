@@ -59,7 +59,8 @@ func DedupDB(disk_name string) {
 func DedupMirror(disk_name string) {
 	db := g_dbs[disk_name]
 
-	count := 0
+	total := 0
+	deleted := 0
 
 	var id string = ""
 	var path string = ""
@@ -77,15 +78,19 @@ func DedupMirror(disk_name string) {
 			log.Printf("file %s path in db not start with disks-root %s\n", id, g_roots.disks_root)
 		}
 
+		total++
+
 		if !FileExists(path) {
-			// log.Printf("file %s not in mirros-root %s\n", id, g_roots.mirrors_root)
 			continue
 		}
 
-		RemoveFile(path)
+		ok = RemoveFile(path)
+		if !ok {
+			continue
+		}
 
-		count++
+		deleted++
 	}
 
-	fmt.Printf("%s: %d dups deleted.\n", disk_name, count)
+	fmt.Printf("%s: %8d dups, %8d deleted.\n", disk_name, total, deleted)
 }
