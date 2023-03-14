@@ -61,35 +61,31 @@ func DedupMirror(disk_name string) {
 
 	count := 0
 
-	id := ""
+	var id string = ""
+	var path string = ""
 
 	for {
-		file, ok := db.GetNextNodupFile(id)
+		file, ok := db.GetNextDupFile(id)
 		if !ok {
 			break
 		}
 
-		if len(file.dup_id) > 8 {
-			continue
-		}
-
 		id = file.id
 
-		key := file.Sha1SizeKey()
-		// fmt.Printf("%s  %s\n", id, key)
-
-		dup_id, ok := g_dup_files[key]
+		path, ok = file.MirrorPath()
 		if !ok {
-			g_dup_files[key] = id
+			log.Printf("file %s path in db not start with disks-root %s\n", id, g_roots.disks_root)
+		}
+
+		if !FileExists(path) {
+			// log.Printf("file %s not in mirros-root %s\n", id, g_roots.mirrors_root)
 			continue
 		}
 
-		file.dup_id = dup_id
-		db.ModFileDupID(file.id, file.dup_id)
-		log.Printf("%s\t==\t%s\n", file.id, file.dup_id)
+		RemoveFile(path)
 
 		count++
 	}
 
-	fmt.Printf("%s: %d dups found\n", disk_name, count)
+	fmt.Printf("%s: %d dups deleted.\n", disk_name, count)
 }

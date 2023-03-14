@@ -20,10 +20,10 @@ func PassErr(err error, format string, args ...any) bool {
 	if err != nil {
 		log.Println(err.Error())
 		log.Printf(format, args...)
-		log.Println()
+		// log.Println()
 
-		fmt.Printf(format, args...)
-		fmt.Println()
+		// fmt.Printf(format, args...)
+		// fmt.Println()
 	}
 
 	return err == nil
@@ -32,10 +32,10 @@ func PassErr(err error, format string, args ...any) bool {
 func PassOk(ok bool, format string, args ...any) bool {
 	if !ok {
 		log.Printf(format, args...)
-		log.Println()
+		// log.Println()
 
-		fmt.Printf(format, args...)
-		fmt.Println()
+		// fmt.Printf(format, args...)
+		// fmt.Println()
 	}
 
 	return ok

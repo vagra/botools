@@ -61,6 +61,11 @@ func CheckCopyFile(src string, dst string) {
 	}
 }
 
+func RemoveFile(path string) bool {
+	err := os.Remove(path)
+	return PassErr(err, "删除文件时出错 %s", path)
+}
+
 func CopyFile(src string, dst string) bool {
 	src_file, err := os.Open(src)
 	if !PassErr(err, "copy: 打开 src 文件时出错 %s", src) {

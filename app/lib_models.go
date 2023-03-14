@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Disk struct {
@@ -102,6 +103,17 @@ func (f *File) Sha1SizeKey() string {
 	return fmt.Sprintf("%s-%d", f.sha1, f.size)
 }
 
-func (f *File) MirrorPath() string {
-	return ""
+func (f *File) MirrorPath() (string, bool) {
+	var path string = ""
+
+	if !strings.HasPrefix(f.path, g_roots.disks_root) {
+		return f.path, false
+	}
+
+	path = fmt.Sprintf("%s/%s",
+		g_roots.mirrors_root, strings.TrimLeft(f.path, g_roots.disks_root))
+
+	path = strings.ReplaceAll(path, "//", "/")
+
+	return path, true
 }
