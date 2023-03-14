@@ -60,6 +60,7 @@ func DedupMirror(disk_name string) {
 	db := g_dbs[disk_name]
 
 	total := 0
+	not_exists := 0
 	deleted := 0
 
 	var id string = ""
@@ -81,6 +82,7 @@ func DedupMirror(disk_name string) {
 		total++
 
 		if !FileExists(path) {
+			not_exists++
 			continue
 		}
 
@@ -92,5 +94,6 @@ func DedupMirror(disk_name string) {
 		deleted++
 	}
 
-	fmt.Printf("%s: %8d dups, %8d deleted.\n", disk_name, total, deleted)
+	fmt.Printf("%s: %8d dups%8d not exists%8d deleted\n",
+		disk_name, total, not_exists, deleted)
 }
