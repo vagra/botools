@@ -222,6 +222,20 @@ func GetHasErrorDBs() {
 	}
 }
 
+func InitDBCounters() {
+	//println("初始化每个数据库的 dirs 和 files 的 id 计数器")
+
+	g_dirs_counter = make(map[string]*int64)
+	g_files_counter = make(map[string]*int64)
+
+	for disk_name := range g_dbs {
+		dir_counter := int64(0)
+		file_counter := int64(0)
+		g_dirs_counter[disk_name] = &dir_counter
+		g_files_counter[disk_name] = &file_counter
+	}
+}
+
 func GetDBCounters() {
 	println("获取每个数据库的 dirs 和 files 的 id 计数器")
 
@@ -492,4 +506,63 @@ func GenUID(prefix string, counter *int64) string {
 
 func GetUID(prefix string, id int64) string {
 	return fmt.Sprintf("%s%08d", prefix, id)
+}
+
+func InsertDirs(disk_name string) {
+
+	var db *DB = g_dbs[disk_name]
+
+	var m int = 0
+	var n int = 0
+
+	db.BeginBulk()
+
+	for _, dir := range g_map_dirs[disk_name] {
+
+		db.AddDir(dir)
+
+		m += 1
+		n += 1
+
+		if m >= len(g_map_dirs[disk_name]) {
+			db.EndBulk()
+			break
+		}
+
+		if n >= INSERT_COUNT {
+			n = 0
+
+			db.EndBulk()
+			db.BeginBulk()
+		}
+	}
+}
+
+func InsertFiles(disk_name string) {
+	var db *DB = g_dbs[disk_name]
+
+	var m int = 0
+	var n int = 0
+
+	db.BeginBulk()
+
+	for _, file := range g_map_files[disk_name] {
+
+		db.AddFile(file)
+
+		m += 1
+		n += 1
+
+		if m >= len(g_map_files[disk_name]) {
+			db.EndBulk()
+			break
+		}
+
+		if n >= INSERT_COUNT {
+			n = 0
+
+			db.EndBulk()
+			db.BeginBulk()
+		}
+	}
 }

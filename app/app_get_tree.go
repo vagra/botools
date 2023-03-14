@@ -10,7 +10,7 @@ import (
 )
 
 func GetTree() error {
-	println("start: get tree")
+	println("start: get tree from real disks")
 
 	println()
 	InitLog(GET_TREE_LOG)
@@ -31,16 +31,21 @@ func GetTree() error {
 	CheckAllDBInited()
 
 	println()
-	GetEmptyDBs()
+	ConfirmGetTree()
+
+	println()
+	LoadEmptyDBs2Mem()
 
 	CheckTaskHasDBs()
-	InitMaps()
+
+	InitDBCounters()
 
 	println()
 	MTGetTree()
 
 	println()
-	println("get tree done!")
+	println("get tree from real disks done!")
+
 	return nil
 }
 
@@ -60,72 +65,58 @@ func MTGetTree() {
 func GetTreeWorker(wg *sync.WaitGroup, disk_name string) {
 	defer wg.Done()
 
-	disk_path := g_disks[disk_name]
-	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
-
 	start := time.Now()
 
-	InitMap(disk_name)
-	InitRootDir(disk_name, disk_path)
+	disk_path := g_disks[disk_name]
+
+	fmt.Printf("%s worker: start scan %s\n", disk_name, disk_path)
 
 	ReadTree(disk_name)
-	ReportDiskCounts(disk_name, disk_path)
 
-	db_path := GetDBPath(disk_name)
-	fmt.Printf("%s worker: write to db %s\n", disk_name, db_path)
-
-	WriteDB(disk_name)
-	ReportDBCounts(disk_name, db_path)
+	BakeMemDB(disk_name)
 
 	fmt.Printf("%s worker: stop. times: %v\n", disk_name, time.Since(start))
 }
 
-func InitRootDir(disk_name string, disk_path string) {
-	var dir Dir
-	dir.id = GenDirUID(disk_name)
-	dir.parent_id = "0"
-	dir.name = disk_path
-	dir.path = disk_path
+func ConfirmGetTree() {
+	println("本程序用于遍历物理目录，在数据库中建立最初的 dirs 和 files 条目")
+	fmt.Printf("1. 执行本程序前，需要确保 %s 中所有 disks 对应的数据库都已初始化\n", CONFIG_INI)
+	println("2. 如果一个数据库中已经存在 dirs 或 files，会跳过这个数据库")
+	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
-	g_map_dirs[disk_name][dir.id] = &dir
+	CheckConfirm()
 }
 
 func ReadTree(disk_name string) {
-	root_id := GetDirUID(disk_name, 1)
-	root_dir := g_map_dirs[disk_name][root_id]
 
-	ReadDir(disk_name, root_dir, root_dir.name)
+	disk_path := g_disks[disk_name]
+
+	var root_dir Dir
+	root_dir.parent_id = "0"
+	root_dir.name = disk_path
+	root_dir.path = disk_path
+
+	db := g_dbs[disk_name]
+
+	ReadDir(db, disk_name, &root_dir)
+
+	fmt.Printf("%s: %8d dirs, %8d files\n",
+		disk_name, db.QueryDirsCount(), db.QueryFilesCount())
 }
 
-func WriteDB(disk_name string) {
-	InsertDirs(disk_name)
-	InsertFiles(disk_name)
-}
+func ReadDir(db *DB, disk_name string, dir *Dir) {
 
-func ReportDiskCounts(disk_name string, disk_path string) {
-	fmt.Printf("%s %s\n%8d dirs, %8d files\n",
-		disk_name, disk_path,
-		len(g_map_dirs[disk_name]), len(g_map_files[disk_name]))
-}
-
-func ReportDBCounts(disk_name string, db_path string) {
-	var db *DB = g_dbs[disk_name]
-
-	fmt.Printf("%s %s\n%8d dirs, %8d files\n",
-		disk_name, db_path,
-		db.QueryDirsCount(), db.QueryFilesCount())
-}
-
-func ReadDir(disk_name string, dir *Dir, path string) {
-
-	if !DirExists(path) {
-		log.Printf("dir not exists: %s\n", path)
+	if !DirExists(dir.path) {
+		log.Printf("real dir not exists: %s\n", dir.path)
 		return
 	}
 
-	items, _ := os.ReadDir(path)
+	dir.id = GenDirUID(disk_name)
+	db.AddDir(dir)
+
+	items, _ := os.ReadDir(dir.path)
 	for _, item := range items {
-		item_path := path + "/" + item.Name()
+		item_path := dir.path + "/" + item.Name()
 		item_path = strings.Replace(item_path, "//", "/", -1)
 
 		if IsHidden(item_path) {
@@ -135,21 +126,18 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 		if item.IsDir() {
 
 			var sub Dir
-			sub.id = GenDirUID(disk_name)
 			sub.parent_id = dir.id
 			sub.name = item.Name()
 			sub.path = item_path
 			info, _ := item.Info()
 			sub.mod_time = info.ModTime().Format(TIME_FORMAT)
 
-			g_map_dirs[disk_name][sub.id] = &sub
-
-			ReadDir(disk_name, &sub, item_path)
+			ReadDir(db, disk_name, &sub)
 
 		} else {
 
 			var file File
-			file.id = GenFileUID(disk_name)
+
 			file.parent_id = dir.id
 			file.name = item.Name()
 			file.path = item_path
@@ -157,66 +145,19 @@ func ReadDir(disk_name string, dir *Dir, path string) {
 			file.size = info.Size()
 			file.mod_time = info.ModTime().Format(TIME_FORMAT)
 
-			g_map_files[disk_name][file.id] = &file
+			ReadFile(db, disk_name, &file)
+
 		}
 	}
 }
 
-func InsertDirs(disk_name string) {
+func ReadFile(db *DB, disk_name string, file *File) {
 
-	var db *DB = g_dbs[disk_name]
-
-	var m int = 0
-	var n int = 0
-
-	db.BeginBulk()
-
-	for _, dir := range g_map_dirs[disk_name] {
-
-		db.AddDir(dir)
-
-		m += 1
-		n += 1
-
-		if m >= len(g_map_dirs[disk_name]) {
-			db.EndBulk()
-			break
-		}
-
-		if n >= INSERT_COUNT {
-			n = 0
-
-			db.EndBulk()
-			db.BeginBulk()
-		}
+	if !FileExists(file.path) {
+		log.Printf("real file not exists: %s\n", file.path)
+		return
 	}
-}
 
-func InsertFiles(disk_name string) {
-	var db *DB = g_dbs[disk_name]
-
-	var m int = 0
-	var n int = 0
-
-	db.BeginBulk()
-
-	for _, file := range g_map_files[disk_name] {
-
-		db.AddFile(file)
-
-		m += 1
-		n += 1
-
-		if m >= len(g_map_files[disk_name]) {
-			db.EndBulk()
-			break
-		}
-
-		if n >= INSERT_COUNT {
-			n = 0
-
-			db.EndBulk()
-			db.BeginBulk()
-		}
-	}
+	file.id = GenFileUID(disk_name)
+	db.AddFile(file)
 }

@@ -3,6 +3,7 @@
 *.zip
 *.log
 *.old
+*.bak
 *.db-journal
 go.sum
 config.ini
