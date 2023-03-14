@@ -3,7 +3,7 @@
 
 used to get the dirs/files tree on the disk, including meta, sha1, and record to the sqlite database, then deduplications, make and sync virtual links for dir and files, etc.
 
-![drawio](https://../assets/chart.png)
+![chart]((https://github.com/vagra/botools/blob/ec491b0c2740d7b1859ddeef54403f4b7d4be24a/assets/chart.png))
 
 # requirement
 2023-1-29
