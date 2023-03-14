@@ -3,6 +3,8 @@
 
 used to get the dirs/files tree on the disk, including meta, sha1, and record to the sqlite database, then deduplications, make and sync virtual links for dir and files, etc.
 
+![drawio](https://../assets/chart.png)
+
 # requirement
 2023-1-29
 
