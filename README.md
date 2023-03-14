@@ -1,7 +1,7 @@
 # botools
 [bot.sanxuezang.com](https://bot.sanxuezang.com) toolchain
 
-used to get the dirs/files tree on the disk, including meta, sha1, and record to the sqlite database.
+used to get the dirs/files tree on the disk, including meta, sha1, and record to the sqlite database, then deduplications, make and sync virtual links for dir and files, etc.
 
 # requirement
 2023-1-29
