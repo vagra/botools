@@ -4,6 +4,8 @@
 *.log
 *.old
 *.bak
+*.bkp
+*.dtmp
 *.db-journal
 go.sum
 config.ini
