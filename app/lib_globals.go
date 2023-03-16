@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.7.0"
+const VERSION = "1.8.0"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -100,8 +100,7 @@ const CHECKSUM_LOG string = "checksum.log"
 const REAL2DB_LOG string = "real2db.log"
 const DEDUP_DBS_LOG string = "dedup_dbs.log"
 const DEDUP_MIRRORS_LOG string = "dedup_mirrors.log"
-const DB2VDB_LOG string = "db2vdb.log"
-const VDB2VIR_LOG string = "vdb2vir.log"
+const DB2VIR_LOG string = "vdb2vir.log"
 const MOVE_ERRORS_LOG string = "move_errors.log"
 
 const MIGRATE string = "migrate-v"
@@ -154,10 +153,8 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       检查数据库中的 files，将重复文件的 dup_id 设为唯一文件的 id。
 8)    dedup_mirrors: 在镜像目录下查重
       根据查重后的数据库，删除镜像目录下所有的重复文件，只保留一个唯一文件。
-9)    sync_db2vdb: 从数据库同步到虚拟数据库
-      把数据库中的 dirs 和 files 同步到 vdirs 和 vfiles。
-10)    sync_vdb2vir: 从虚拟数据库同步到虚拟目录树
-      根据数据库中的 vdirs 和 vfiles 同步虚拟目录树。
+9)    sync_db2vir: 从数据库同步到虚拟目录树
+      根据数据库中的 dirs 和 files 同步虚拟目录树。
 
 100)  update_self: 更新 botools
       自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini 。

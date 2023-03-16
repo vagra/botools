@@ -64,9 +64,7 @@ func Run(step int) error {
 	case 8:
 		err = DedupMirrors()
 	case 9:
-		err = SyncDB2VDB()
-	case 10:
-		err = SyncVDB2Vir()
+		err = SyncDB2Vir()
 	case 100:
 		err = UpdateSelf()
 	// case 101:

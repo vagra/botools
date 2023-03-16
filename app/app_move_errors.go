@@ -39,33 +39,35 @@ func MoveErrors() error {
 	CheckAllDBRootPathCorrect()
 
 	println()
-	GetHasErrorDBs()
-
-	CheckTaskHasDBs()
+	ConfirmMoveErrors()
 
 	println()
-	ConfirmMoveErrors()
+	LoadHasErrorDBs2Mem()
+
+	CheckTaskHasDBs()
 
 	println()
 	STMoveErrors()
 
 	println()
 	println("move error dirs and files done!")
+
 	return nil
 }
 
 func STMoveErrors() {
 	fmt.Printf("复制异常文件和文件夹到 %s\n", g_roots.errors_root)
 
-	for name := range g_dbs {
-		MoveDiskErrors(name)
+	for disk_name := range g_dbs {
+		MoveDiskErrors(disk_name)
 	}
 
 	println()
 	println("把数据库中异常 dirs 和 files 的 error 设为 1")
 
-	for name := range g_dbs {
-		MoveDBErrors(name)
+	for disk_name := range g_dbs {
+		MarkDBErrors(disk_name)
+		BakeMemDB(disk_name)
 	}
 }
 
@@ -96,7 +98,7 @@ func MoveDiskErrors(disk_name string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func MoveDBErrors(disk_name string) {
+func MarkDBErrors(disk_name string) {
 	db_path := GetDBPath(disk_name)
 
 	fmt.Printf("%s worker: start update %s\n", disk_name, db_path)
@@ -106,9 +108,9 @@ func MoveDBErrors(disk_name string) {
 	for _, item := range g_errors[disk_name] {
 		switch item.error_type {
 		case NODIR:
-			MoveDBErrorDir(db_path, db, item)
+			MarkDBErrorDir(db_path, db, item)
 		case NOFILE:
-			MoveDBErrorFile(db_path, db, item)
+			MarkDBErrorFile(db_path, db, item)
 		default:
 		}
 	}
@@ -116,7 +118,7 @@ func MoveDBErrors(disk_name string) {
 	fmt.Printf("%s worker: stop.\n", disk_name)
 }
 
-func MoveDBErrorDir(db_path string, db *DB, item *ErrorItem) {
+func MarkDBErrorDir(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
 	id, ok := db.QueryDirIDFromPath(path)
 
@@ -132,7 +134,7 @@ func MoveDBErrorDir(db_path string, db *DB, item *ErrorItem) {
 	db.ModDirFilesError(id, 1)
 }
 
-func MoveDBErrorFile(db_path string, db *DB, item *ErrorItem) {
+func MarkDBErrorFile(db_path string, db *DB, item *ErrorItem) {
 	path := item.RealPath()
 	id, ok := db.QueryFileIDFromPath(path)
 
