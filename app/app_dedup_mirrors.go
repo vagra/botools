@@ -86,7 +86,7 @@ func ConfirmDedupMirrors() {
 	println("1. 将整个 disks-root 复制或建立硬链接到 mirrors-root")
 	fmt.Printf("2. 在 %s 中设置好 disks-root 和 mirrors-root\n", CONFIG_INI)
 	fmt.Printf("3. 检查数据库中的 dirs 和 files 根目录与 disks-root 一致\n")
-	println("因为程序通过把文件路径中的 disks-root 替换为 mirrors-root 来获得它在镜像目录下的路径\n")
+	println("   程序通过把文件路径中的 disks-root 替换为 mirrors-root 来获得它在镜像目录下的路径\n")
 	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
 	CheckConfirm()

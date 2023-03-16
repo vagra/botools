@@ -359,7 +359,7 @@ func CheckAllDBRootPathInDisksRoot() {
 	fmt.Printf("检查是否所有数据库中的根路径都以 %s 中的 disks-root 开头\n", CONFIG_INI)
 
 	if paths, yes := AllDBRootPathInDisksRoot(); !yes {
-		fmt.Printf("检查到如下数据库中的根路径以 %s 中的 disks-root 开头：\n", CONFIG_INI)
+		fmt.Printf("检查到如下数据库中的根路径没有以 %s 中的 disks-root 开头：\n", CONFIG_INI)
 		for db_path, root_path := range paths {
 			fmt.Printf("%s\t%s\n", db_path, root_path)
 		}

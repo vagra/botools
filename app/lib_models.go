@@ -117,3 +117,51 @@ func (f *File) MirrorPath() (string, bool) {
 
 	return path, true
 }
+
+func (f *File) RealPath() (string, bool) {
+
+	if f.error == 1 {
+		return f.ErrorPath()
+	}
+
+	if len(f.dup_id) <= 0 {
+		return f.path, true
+	}
+
+	real_file, ok := g_real_files[f.dup_id]
+	if !ok {
+		return f.path, false
+	}
+
+	return real_file.path, true
+}
+
+func (f *File) VirPath() (string, bool) {
+	var path string = ""
+
+	if !strings.HasPrefix(f.path, g_roots.disks_root) {
+		return f.path, false
+	}
+
+	path = fmt.Sprintf("%s/%s",
+		g_roots.virs_root, strings.TrimLeft(f.path, g_roots.disks_root))
+
+	path = strings.ReplaceAll(path, "//", "/")
+
+	return path, true
+}
+
+func (f *File) ErrorPath() (string, bool) {
+	var path string = ""
+
+	if !strings.HasPrefix(f.path, g_roots.disks_root) {
+		return f.path, false
+	}
+
+	path = fmt.Sprintf("%s/%s",
+		g_roots.errors_root, strings.TrimLeft(f.path, g_roots.disks_root))
+
+	path = strings.ReplaceAll(path, "//", "/")
+
+	return path, true
+}

@@ -271,6 +271,25 @@ func (db *DB) GetAllFiles() map[string]*File {
 	return files
 }
 
+func (db *DB) GetRealFiles() map[string]*File {
+
+	var files map[string]*File = make(map[string]*File)
+
+	rows := db.QueryRows(SQL_GET_REAL_FILES)
+	defer rows.Close()
+
+	for rows.Next() {
+		var file File
+
+		DBScanRows(rows, SQL_GET_REAL_FILES,
+			&file.id, &file.parent_id, &file.name, &file.path, &file.status, &file.error)
+
+		files[file.id] = &file
+	}
+
+	return files
+}
+
 func (db *DB) QueryNoSHA1FilesCount() int64 {
 	var count int64 = 0
 
@@ -355,6 +374,18 @@ func (db *DB) GetNextDupFile(id string) (*File, bool) {
 	row := db.QueryRow(SQL_GET_NEXT_DUP_FILE, id)
 
 	ok := DBScanRow(row, SQL_GET_NEXT_DUP_FILE,
+		&file.id, &file.parent_id, &file.name, &file.path,
+		&file.size, &file.status, &file.error, &file.dup_id, &file.sha1)
+
+	return &file, ok
+}
+
+func (db *DB) GetNextExistOrErrorFile(id string) (*File, bool) {
+	var file File
+
+	row := db.QueryRow(SQL_GET_NEXT_EXIST_OR_ERROR_FILE, id)
+
+	ok := DBScanRow(row, SQL_GET_NEXT_EXIST_OR_ERROR_FILE,
 		&file.id, &file.parent_id, &file.name, &file.path,
 		&file.size, &file.status, &file.error, &file.dup_id, &file.sha1)
 

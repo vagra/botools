@@ -34,6 +34,9 @@ func SyncDB2Vir() error {
 	CheckAllDBRootPathCorrect()
 
 	println()
+	CheckAllDBRootPathInDisksRoot()
+
+	println()
 	CheckVirsRootExists()
 
 	println()
@@ -46,6 +49,8 @@ func SyncDB2Vir() error {
 	OnlyReadHasDataDBs2Mem()
 
 	CheckTaskHasDBs()
+
+	ReadRealMap()
 
 	println()
 	MTDB2Vir()
@@ -85,11 +90,12 @@ func DB2VirWorker(wg *sync.WaitGroup, disk_name string) {
 func ConfirmDB2Vir() {
 	println("本程序用于根据数据库中的 dirs 和 files 在 virs-root 下生成虚拟目录树")
 	println("请确认已做好如下准备工作：")
-	fmt.Printf("1. 在 %s 中设置好 virs-root\n", CONFIG_INI)
+	fmt.Printf("1. 在 %s 中设置好 disks-root, virs-root, errors-root\n", CONFIG_INI)
 	println("2. virs-root 目录若不为空，请手动清空")
-	println("   因为程序将重新生成整个虚拟目录树，如果此前有多余的虚拟文件，不会被自动删除")
-	fmt.Printf("3. 在 %s 中设置好 errors-root\n", CONFIG_INI)
-	println("   异常文件的链接将会根据 errors-root 生成")
+	println("   程序将重新生成整个虚拟目录树，如果此前有多余的虚拟文件，不会被自动删除")
+	println("3. 检查数据库中的 dirs 和 files 根目录与 disks-root 一致")
+	println("   程序通过把文件路径中的 disks-root 替换为 virs-root 来获得它在虚拟目录下的路径")
+	println("   异常文件的路径则通过把 disks-root 替换为 errors-root 来获得")
 	println("您确定要执行这个操作吗？请输入 yes 或 no ：")
 
 	CheckConfirm()
