@@ -28,8 +28,19 @@ func DB2Vir(disk_name string) {
 			log.Printf("file %s get real path error\n", id)
 		}
 
-		if file.error == 1 {
-			fmt.Printf("%s: dup %s, error %d, real %s\n", id, file.dup_id, file.error, real_path)
+		real_path = fmt.Sprintf("%s -vid=%s", real_path, id)
+
+		vir_path, ok := file.VirPath()
+		if !ok {
+			log.Printf("file %s get vir path error\n", id)
+		}
+
+		if !PassMakeParentDirs(vir_path) {
+			continue
+		}
+
+		if !MakeVirLink(real_path, vir_path) {
+			continue
 		}
 
 		count++
@@ -63,6 +74,12 @@ func ReadRealMap() {
 
 }
 
-func MakeVirLink(file *File) {
+func MakeVirLink(real_path string, vir_path string) bool {
+	err := os.Symlink(real_path, vir_path)
+	if err != nil {
+		log.Printf("make vir link fail: %s -> %s\n", vir_path, real_path)
+		return false
+	}
 
+	return true
 }
