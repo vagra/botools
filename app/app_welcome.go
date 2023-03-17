@@ -51,12 +51,12 @@ func Run(step int) error {
 		err = InitDBs()
 	case 2:
 		err = GetTree()
-	case 3:
-		err = GetSize()
+	// case 3:
+	//	err = GetSize()
 	case 4:
 		err = CheckSum()
-	case 5:
-		err = VirTree()
+	// case 5:
+	//	err = VirTree()
 	case 6:
 		err = SyncReal2DB()
 	case 7:

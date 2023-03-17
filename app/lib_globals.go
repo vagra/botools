@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.9.0"
+const VERSION = "1.9.1"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -82,12 +82,8 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       若数据库文件不存在就新建；若已存在就跳过。
 2)    get_tree: 获取目录树
       获取指定根目录下的文件夹、文件的路径和元数据，保存到数据库；若数据库有数据就跳过。
-3)    get_size: 获取文件夹大小
-      基于现有数据库，获取每一个文件夹的大小。
 4)    checksum: 获取文件校验和
       基于现有数据库，获取每一个文件的 SHA1 校验和。
-5)    vir_tree: 生成虚拟目录树
-      不生成数据库，而是用软链接的方式生成虚拟的目录树。
 6)    sync_real2db: 从物理目录同步数据库
       检查物理目录的文件夹和文件，更新数据库中的 dirs, files。
 7)    dedup_dbs: 在数据库中查重
@@ -99,8 +95,6 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
 
 100)  update_self: 更新 botools
       自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini 。
-101)  trim_ids: 截短 ID [已禁用]
-      一次性维护功能，数据库中的 dirs 和 files id 16 位太长，截到 8 位。
 102)  mod_path: 修改路径
       维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
 103)  move_errors: 复制异常文件和文件夹到指定目录
@@ -109,9 +103,9 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       维护功能，修改了 config.ini 和 dbs 的 disk_name 后，更新数据库中的 dirs 和 files 的 disk_id 。
 
 200)  migrate_db: 升级数据库
-      [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
-      [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
       [2023-03-03 v4] 为 dirs 和 files 添加 error, dup_id 以标记异常、重复，status 仅用于标记是否存在
+      [2023-03-02 v3] 新建表 vdirs 和 vfiles ，用于在数据库中生成虚拟树（vdb）
+      [2023-02-23 v2] 在 dirs 表添加新字段 status 用于标记文件夹状态 0存在 1不存在 2重复 3名字超长
 0)    exit: 退出程序
 
 请输入数字并回车来启动对应的子程序：
