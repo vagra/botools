@@ -64,10 +64,3 @@ func Str2Int64(str string) int64 {
 func Int642Str(num int64) string {
 	return fmt.Sprintf("%d", num)
 }
-
-func CleanPath(path string) string {
-	path = strings.Replace(path, "\\", "/", -1)
-	path = strings.Replace(path, "//", "/", -1)
-
-	return path
-}

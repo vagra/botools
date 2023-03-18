@@ -10,6 +10,26 @@ import (
 	"syscall"
 )
 
+func CleanDirPath(path string) string {
+	path = fmt.Sprintf("%s/", path)
+	path = CleanPath(path)
+
+	return path
+}
+
+func CleanPath(path string) string {
+	path = strings.Replace(path, "\\", "/", -1)
+
+	for {
+		if !strings.Contains(path, "//") {
+			break
+		}
+		path = strings.Replace(path, "//", "/", -1)
+	}
+
+	return path
+}
+
 func PassMakeParentDirs(path string) bool {
 	ok := MakeParentDirs(path)
 	return PassOk(ok, "为 %s 创建上级目录失败", path)
