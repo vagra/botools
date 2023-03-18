@@ -62,7 +62,11 @@ func DiskPathValid(path string) bool {
 	}
 
 	if !strings.Contains(path, ":") &&
-		!strings.HasSuffix(path, "/") {
+		!strings.HasPrefix(path, "/") {
+		return false
+	}
+
+	if !strings.HasSuffix(path, "/") {
 		return false
 	}
 
