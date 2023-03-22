@@ -230,6 +230,9 @@ UPDATE files SET id = REPLACE(id, '-00000000', '-'), parent_id = REPLACE(parent_
 -- name: mod-files-status
 UPDATE files SET status = ?;
 
+-- name: reset-files-dup-id
+UPDATE files SET dup_id = '';
+
 -- name: replace-files-path
 UPDATE files SET path = ( ? || substr(path, length(?)+1) ) WHERE path LIKE (? || '%');
 

@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.9.3"
+const VERSION = "1.10.0"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -94,13 +94,15 @@ BOTOOLS %s - bot.sanxuezang.com toolchain
       根据数据库中的 dirs 和 files 同步虚拟目录树。
 
 100)  update_self: 更新 botools
-      自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini 。
+      自动查询远程版本，比当前版本新就下载并热更新，包括 exe、dot.sql 和 example.ini。
 102)  mod_path: 修改路径
       维护功能，把数据库中的 dirs 和 files 的 path 根路径替换为新的 disk 路径。
 103)  move_errors: 复制异常文件和文件夹到指定目录
       维护功能，把名字或路径超长，或包含特殊字符的文件和文件夹复制到 errors-root。
 104)  mod_disk_ids: 修改数据库中的 disk_id
-      维护功能，修改了 config.ini 和 dbs 的 disk_name 后，更新数据库中的 dirs 和 files 的 disk_id 。
+      维护功能，修改了 config.ini 和 dbs 的 disk_name 后，更新数据库中的 dirs 和 files 的 disk_id。
+105)  reset_dup_ids: 清空数据库中的 dup_id
+      维护功能，清空 files 的 dup_id 以重新 dedup_dbs 和 dedup_mirrors。
 
 200)  migrate_db: 升级数据库
       [2023-03-03 v4] 为 dirs 和 files 添加 error, dup_id 以标记异常、重复，status 仅用于标记是否存在

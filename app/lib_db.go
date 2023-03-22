@@ -474,6 +474,10 @@ func (db *DB) ModFilesStatus(status int) {
 	db.Exec(SQL_MOD_FILES_STATUS, status)
 }
 
+func (db *DB) ResetFilesDupID() {
+	db.Exec(SQL_RESET_FILES_DUP_ID)
+}
+
 func (db *DB) ReplaceFilesPath(src string, dst string) {
 	db.Exec(SQL_REPLACE_FILES_PATH, dst, src, src)
 }

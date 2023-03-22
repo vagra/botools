@@ -79,6 +79,7 @@ const SQL_MOD_DIR_STATUS string = "mod-dir-status"
 //// update files
 const SQL_TRIM_FILES_ID string = "trim-files-id"
 const SQL_MOD_FILES_STATUS string = "mod-files-status"
+const SQL_RESET_FILES_DUP_ID string = "reset-files-dup-id"
 const SQL_REPLACE_FILES_PATH string = "replace-files-path"
 const SQL_REPLACE_FILES_ID string = "replace-files-id"
 const SQL_REPLACE_FILES_PARENT_ID string = "replace-files-parent-id"

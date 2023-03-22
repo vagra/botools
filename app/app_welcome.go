@@ -75,6 +75,8 @@ func Run(step int) error {
 		err = MoveErrors()
 	case 104:
 		err = ModDiskIDs()
+	case 105:
+		err = ResetDupIDs()
 	case 200:
 		err = MigrateDB()
 	case 0:
