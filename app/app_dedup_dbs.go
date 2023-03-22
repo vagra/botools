@@ -40,7 +40,7 @@ func DedupDBs() error {
 
 	CheckTaskHasDBs()
 
-	InitDupMap()
+	ReadUniqueMap()
 
 	println()
 	STDedupDBs()

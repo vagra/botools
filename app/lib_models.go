@@ -128,7 +128,7 @@ func (f *File) RealPath() (string, bool) {
 		return f.path, true
 	}
 
-	real_file, ok := g_real_files[f.dup_id]
+	real_file, ok := g_unique_files[f.dup_id]
 	if !ok {
 		return f.path, false
 	}

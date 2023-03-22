@@ -6,7 +6,7 @@ import (
 	"github.com/qustavo/dotsql"
 )
 
-const VERSION = "1.10.0"
+const VERSION = "1.10.5"
 
 const TIME_FORMAT string = "2006-01-02 15:04:05"
 const INSERT_COUNT int = 1000
@@ -66,9 +66,9 @@ var g_map_files map[string]map[string]*File
 var g_dirs_counter map[string]*int64
 var g_files_counter map[string]*int64
 
-var g_dup_files map[string]string
+var g_uniques map[string]string
 
-var g_real_files map[string]*File
+var g_unique_files map[string]*File
 
 var g_latest int
 

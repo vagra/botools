@@ -50,7 +50,7 @@ func SyncDB2Vir() error {
 
 	CheckTaskHasDBs()
 
-	ReadRealMap()
+	ReadUniqueOrErrorFiles()
 
 	println()
 	MTDB2Vir()

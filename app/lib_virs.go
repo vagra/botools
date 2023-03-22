@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/gotopkg/mslnk/pkg/mslnk"
-	"golang.org/x/exp/maps"
 )
 
 func DB2Vir(disk_name string) {
@@ -60,20 +59,6 @@ func CheckVirsRootExists() {
 		err := os.Mkdir(g_roots.virs_root, os.ModePerm)
 		Check(err, "创建虚拟文件夹 %s 时出错", g_roots.virs_root)
 	}
-}
-
-func ReadRealMap() {
-
-	g_real_files = make(map[string]*File)
-
-	for _, db := range g_dbs {
-		real_files := db.GetRealFiles()
-
-		maps.Copy(g_real_files, real_files)
-	}
-
-	fmt.Printf("total %d real files in all dbs\n", len(g_real_files))
-
 }
 
 func MakeVirLink(real_path string, vir_path string, id string) bool {

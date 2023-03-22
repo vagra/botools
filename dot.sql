@@ -160,8 +160,11 @@ SELECT MAX(id) FROM files;
 -- name: get-all-files
 SELECT id, parent_id, name, path, status, error FROM files;
 
--- name: get-real-files
-SELECT id, parent_id, name, path, status, error FROM files WHERE (LENGTH(dup_id) <= 0 AND status = 0) OR error = 1;
+-- name: get-unique-files
+SELECT id, parent_id, name, path, status, error FROM files WHERE dup_id = 'UNIQUE' AND status = 0 AND error = 0;
+
+-- name: get-unique-or-error-files
+SELECT id, parent_id, name, path, status, error FROM files WHERE (dup_id = 'UNIQUE' AND status = 0) OR error = 1;
 
 -- name: get-no-sha1-files-count
 SELECT count(id) FROM files WHERE LENGTH(sha1) <= 0 AND status = 0;
@@ -179,10 +182,10 @@ SELECT id FROM files LIMIT 1;
 SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE id > ? ORDER BY id LIMIT 1;
 
 -- name: get-next-nodup-file
-SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE (LENGTH(dup_id) <= 0 AND LENGTH(sha1) >= 8 AND status = 0 AND error = 0) AND id > ? ORDER BY id LIMIT 1;
+SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE (LENGTH(dup_id) < 4 AND LENGTH(sha1) > 8 AND status = 0 AND error = 0) AND id > ? ORDER BY id LIMIT 1;
 
 -- name: get-next-dup-file
-SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE (LENGTH(dup_id) >= 8 AND status = 0 AND error = 0) AND id > ? ORDER BY id LIMIT 1;
+SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE (LENGTH(dup_id) > 8 AND status = 0 AND error = 0) AND id > ? ORDER BY id LIMIT 1;
 
 -- name: get-next-exist-or-error-file
 SELECT id, parent_id, name, path, size, status, error, dup_id, sha1 FROM files WHERE (status = 0 or error = 1) AND id > ? ORDER BY id LIMIT 1;

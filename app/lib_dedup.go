@@ -5,10 +5,6 @@ import (
 	"log"
 )
 
-func InitDupMap() {
-	g_dup_files = make(map[string]string)
-}
-
 func CheckMirrorsRootExists() {
 	fmt.Printf("检查镜像目录 %s 是否存在\n", g_roots.mirrors_root)
 
@@ -26,23 +22,25 @@ func DedupDB(disk_name string) {
 	id := ""
 
 	for {
-		file, ok := db.GetNextNodupFile(id)
+		file, ok := db.GetNextNoDupFile(id)
 		if !ok {
 			break
 		}
 
-		if len(file.dup_id) > 8 {
+		if len(file.dup_id) > 4 {
 			continue
 		}
 
 		id = file.id
 
 		key := file.Sha1SizeKey()
-		// fmt.Printf("%s  %s\n", id, key)
 
-		dup_id, ok := g_dup_files[key]
+		dup_id, ok := g_uniques[key]
 		if !ok {
-			g_dup_files[key] = id
+			g_uniques[key] = id
+
+			db.ModFileDupID(file.id, "UNIQUE")
+
 			continue
 		}
 

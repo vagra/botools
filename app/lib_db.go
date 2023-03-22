@@ -271,17 +271,36 @@ func (db *DB) GetAllFiles() map[string]*File {
 	return files
 }
 
-func (db *DB) GetRealFiles() map[string]*File {
+func (db *DB) GetUniqueFiles() map[string]*File {
 
 	var files map[string]*File = make(map[string]*File)
 
-	rows := db.QueryRows(SQL_GET_REAL_FILES)
+	rows := db.QueryRows(SQL_GET_UNIQUE_FILES)
 	defer rows.Close()
 
 	for rows.Next() {
 		var file File
 
-		DBScanRows(rows, SQL_GET_REAL_FILES,
+		DBScanRows(rows, SQL_GET_UNIQUE_FILES,
+			&file.id, &file.parent_id, &file.name, &file.path, &file.status, &file.error)
+
+		files[file.id] = &file
+	}
+
+	return files
+}
+
+func (db *DB) GetUniqueOrErrorFiles() map[string]*File {
+
+	var files map[string]*File = make(map[string]*File)
+
+	rows := db.QueryRows(SQL_GET_UNIQUE_OR_ERROR_FILES)
+	defer rows.Close()
+
+	for rows.Next() {
+		var file File
+
+		DBScanRows(rows, SQL_GET_UNIQUE_OR_ERROR_FILES,
 			&file.id, &file.parent_id, &file.name, &file.path, &file.status, &file.error)
 
 		files[file.id] = &file
@@ -356,7 +375,7 @@ func (db *DB) GetNextFile(id string) (*File, bool) {
 	return &file, ok
 }
 
-func (db *DB) GetNextNodupFile(id string) (*File, bool) {
+func (db *DB) GetNextNoDupFile(id string) (*File, bool) {
 	var file File
 
 	row := db.QueryRow(SQL_GET_NEXT_NODUP_FILE, id)
